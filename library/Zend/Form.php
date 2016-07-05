@@ -999,9 +999,11 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
             $this->_elements[$name]->addPrefixPaths($prefixPaths);
         }
 
-        $this->_order[$name] = $this->_elements[$name]->getOrder();
-        $this->_orderUpdated = true;
-        $this->_setElementsBelongTo($name);
+        if (isset($this->_elements[$name])) {
+            $this->_order[$name] = $this->_elements[$name]->getOrder();
+            $this->_orderUpdated = true;
+            $this->_setElementsBelongTo($name);
+        }
 
         return $this;
     }
