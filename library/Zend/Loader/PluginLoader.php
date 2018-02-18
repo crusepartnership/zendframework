@@ -15,8 +15,9 @@
  * @category   Zend
  * @package    Zend_Loader
  * @subpackage PluginLoader
- * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
+ * @version    $Id$
  */
 
 /** Zend_Loader_PluginLoader_Interface */
@@ -31,7 +32,7 @@ require_once 'Zend/Loader.php';
  * @category   Zend
  * @package    Zend_Loader
  * @subpackage PluginLoader
- * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Loader_PluginLoader implements Zend_Loader_PluginLoader_Interface
@@ -41,6 +42,12 @@ class Zend_Loader_PluginLoader implements Zend_Loader_PluginLoader_Interface
      * @var string
      */
     protected static $_includeFileCache;
+
+    /**
+     * Class map cache file handler
+     * @var resource
+     */
+    protected static $_includeFileCacheHandler;
 
     /**
      * Instance loaded plugin paths
@@ -122,7 +129,18 @@ class Zend_Loader_PluginLoader implements Zend_Loader_PluginLoader_Interface
      */
     protected function _formatPrefix($prefix)
     {
-        return rtrim($prefix, '_') . '_';
+        if($prefix == "") {
+            return $prefix;
+        }
+
+        $nsSeparator = (false !== strpos($prefix, '\\'))?'\\':'_';
+        $prefix = rtrim($prefix, $nsSeparator) . $nsSeparator;
+        //if $nsSeprator == "\" and the prefix ends in "_\" remove trailing \
+        //https://github.com/zendframework/zf1/issues/152
+        if(($nsSeparator == "\\") && (substr($prefix,-2) == "_\\")) {
+            $prefix = substr($prefix, 0, -1);
+        }
+        return $prefix;
     }
 
     /**
@@ -145,7 +163,12 @@ class Zend_Loader_PluginLoader implements Zend_Loader_PluginLoader_Interface
         if ($this->_useStaticRegistry) {
             self::$_staticPrefixToPaths[$this->_useStaticRegistry][$prefix][] = $path;
         } else {
-            $this->_prefixToPaths[$prefix][] = $path;
+            if (!isset($this->_prefixToPaths[$prefix])) {
+                $this->_prefixToPaths[$prefix] = array();
+            }
+            if (!in_array($path, $this->_prefixToPaths[$prefix])) {
+                $this->_prefixToPaths[$prefix][] = $path;
+            }
         }
         return $this;
     }
@@ -241,7 +264,7 @@ class Zend_Loader_PluginLoader implements Zend_Loader_PluginLoader_Interface
 
         if ($path != null) {
             $pos = array_search($path, $registry[$prefix]);
-            if ($pos === null) {
+            if (false === $pos) {
                 require_once 'Zend/Loader/PluginLoader/Exception.php';
                 throw new Zend_Loader_PluginLoader_Exception('Prefix ' . $prefix . ' / Path ' . $path . ' was not found in the PluginLoader.');
             }
@@ -336,10 +359,13 @@ class Zend_Loader_PluginLoader implements Zend_Loader_PluginLoader_Interface
      * Load a plugin via the name provided
      *
      * @param  string $name
-     * @return string Class name of loaded class
+     * @param  bool $throwExceptions Whether or not to throw exceptions if the
+     * class is not resolved
+     * @return string|false Class name of loaded class; false if $throwExceptions
+     * if false and no class found
      * @throws Zend_Loader_Exception if class not found
      */
-    public function load($name)
+    public function load($name, $throwExceptions = true)
     {
         $name = $this->_formatName($name);
         if ($this->isLoaded($name)) {
@@ -354,12 +380,16 @@ class Zend_Loader_PluginLoader implements Zend_Loader_PluginLoader_Interface
 
         $registry  = array_reverse($registry, true);
         $found     = false;
-        $classFile = str_replace('_', DIRECTORY_SEPARATOR, $name) . '.php';
+        if (false !== strpos($name, '\\')) {
+            $classFile = str_replace('\\', DIRECTORY_SEPARATOR, $name) . '.php';
+        } else {
+            $classFile = str_replace('_', DIRECTORY_SEPARATOR, $name) . '.php';
+        }
         $incFile   = self::getIncludeFileCache();
         foreach ($registry as $prefix => $paths) {
             $className = $prefix . $name;
 
-            if (class_exists($className)) {
+            if (class_exists($className, false)) {
                 $found = true;
                 break;
             }
@@ -382,6 +412,10 @@ class Zend_Loader_PluginLoader implements Zend_Loader_PluginLoader_Interface
         }
 
         if (!$found) {
+            if (!$throwExceptions) {
+                return false;
+            }
+
             $message = "Plugin by name '$name' was not found in the registry; used paths:";
             foreach ($registry as $prefix => $paths) {
                 $message .= "\n$prefix: " . implode(PATH_SEPARATOR, $paths);
@@ -392,10 +426,8 @@ class Zend_Loader_PluginLoader implements Zend_Loader_PluginLoader_Interface
 
         if ($this->_useStaticRegistry) {
             self::$_staticLoadedPlugins[$this->_useStaticRegistry][$name]     = $className;
-            self::$_staticLoadedPluginPaths[$this->_useStaticRegistry][$name] = (isset($loadFile) ? $loadFile : '');
         } else {
             $this->_loadedPlugins[$name]     = $className;
-            $this->_loadedPluginPaths[$name] = (isset($loadFile) ? $loadFile : '');
         }
         return $className;
     }
@@ -412,6 +444,13 @@ class Zend_Loader_PluginLoader implements Zend_Loader_PluginLoader_Interface
      */
     public static function setIncludeFileCache($file)
     {
+        if (!empty(self::$_includeFileCacheHandler)) {
+            flock(self::$_includeFileCacheHandler, LOCK_UN);
+            fclose(self::$_includeFileCacheHandler);
+        }
+
+        self::$_includeFileCacheHandler = null;
+
         if (null === $file) {
             self::$_includeFileCache = null;
             return;
@@ -451,14 +490,17 @@ class Zend_Loader_PluginLoader implements Zend_Loader_PluginLoader_Interface
      */
     protected static function _appendIncFile($incFile)
     {
-        if (!file_exists(self::$_includeFileCache)) {
-            $file = '<?php';
-        } else {
-            $file = file_get_contents(self::$_includeFileCache);
+        if (!isset(self::$_includeFileCacheHandler)) {
+            self::$_includeFileCacheHandler = fopen(self::$_includeFileCache, 'ab');
+
+            if (!flock(self::$_includeFileCacheHandler, LOCK_EX | LOCK_NB, $wouldBlock) || $wouldBlock) {
+                self::$_includeFileCacheHandler = false;
+            }
         }
-        if (!strstr($file, $incFile)) {
-            $file .= "\ninclude_once '$incFile';";
-            file_put_contents(self::$_includeFileCache, $file);
+
+        if (false !== self::$_includeFileCacheHandler) {
+            $line = "<?php include_once '$incFile'?>\n";
+            fwrite(self::$_includeFileCacheHandler, $line, strlen($line));
         }
     }
 }
