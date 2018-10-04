@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework
  *
@@ -14,20 +15,22 @@
  *
  * @category   Zend
  * @package    Zend_Validate
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id$
+ * @version    $Id: Abstract.php 13351 2008-12-18 15:26:14Z alexander $
  */
+
 
 /**
  * @see Zend_Validate_Interface
  */
 require_once 'Zend/Validate/Interface.php';
 
+
 /**
  * @category   Zend
  * @package    Zend_Validate
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_Validate_Abstract implements Zend_Validate_Interface
@@ -88,19 +91,6 @@ abstract class Zend_Validate_Abstract implements Zend_Validate_Interface
     protected static $_defaultTranslator;
 
     /**
-     * Is translation disabled?
-     * @var Boolean
-     */
-    protected $_translatorDisabled = false;
-
-    /**
-     * Limits the maximum returned length of a error message
-     *
-     * @var Integer
-     */
-    protected static $_messageLength = -1;
-
-    /**
      * Returns array of validation failure messages
      *
      * @return array
@@ -121,16 +111,6 @@ abstract class Zend_Validate_Abstract implements Zend_Validate_Interface
     }
 
     /**
-     * Returns the message templates from the validator
-     *
-     * @return array
-     */
-    public function getMessageTemplates()
-    {
-        return $this->_messageTemplates;
-    }
-
-    /**
      * Sets the validation failure message template for a particular key
      *
      * @param  string $messageString
@@ -142,17 +122,12 @@ abstract class Zend_Validate_Abstract implements Zend_Validate_Interface
     {
         if ($messageKey === null) {
             $keys = array_keys($this->_messageTemplates);
-            foreach($keys as $key) {
-                $this->setMessage($messageString, $key);
-            }
-            return $this;
+            $messageKey = current($keys);
         }
-
         if (!isset($this->_messageTemplates[$messageKey])) {
             require_once 'Zend/Validate/Exception.php';
             throw new Zend_Validate_Exception("No message template exists for key '$messageKey'");
         }
-
         $this->_messageTemplates[$messageKey] = $messageString;
         return $this;
     }
@@ -216,72 +191,40 @@ abstract class Zend_Validate_Abstract implements Zend_Validate_Interface
         $message = $this->_messageTemplates[$messageKey];
 
         if (null !== ($translator = $this->getTranslator())) {
-            if ($translator->isTranslated($messageKey)) {
-                $message = $translator->translate($messageKey);
-            } else {
+            if ($translator->isTranslated($message)) {
                 $message = $translator->translate($message);
+            } elseif ($translator->isTranslated($messageKey)) {
+                $message = $translator->translate($messageKey);
             }
         }
 
         if (is_object($value)) {
-            if (!in_array('__toString', get_class_methods($value))) {
-                $value = get_class($value) . ' object';
-            } else {
-                $value = $value->__toString();
-            }
-        } elseif (is_array($value)) {
-            $value = $this->_implodeRecursive($value);
+        	if (!in_array('__toString', get_class_methods($value))) {
+        		$value = get_class($value) . ' object';
+        	} else {
+        		$value = $value->__toString();
+        	}
         } else {
-            $value = implode((array) $value);
+        	$value = (string)$value;
         }
 
         if ($this->getObscureValue()) {
             $value = str_repeat('*', strlen($value));
         }
 
-        $message = str_replace('%value%', $value, $message);
+        $message = str_replace('%value%', (string) $value, $message);
         foreach ($this->_messageVariables as $ident => $property) {
-            $message = str_replace(
-                "%$ident%",
-                implode(' ', (array) $this->$property),
-                $message
-            );
+            $message = str_replace("%$ident%", (string) $this->$property, $message);
         }
-
-        $length = self::getMessageLength();
-        if (($length > -1) && (strlen($message) > $length)) {
-            $message = substr($message, 0, (self::getMessageLength() - 3)) . '...';
-        }
-
         return $message;
     }
 
     /**
-     * Joins elements of a multidimensional array
-     *
-     * @param array $pieces
-     * @return string
-     */
-    protected function _implodeRecursive(array $pieces)
-    {
-        $values = array();
-        foreach ($pieces as $item) {
-            if (is_array($item)) {
-                $values[] = $this->_implodeRecursive($item);
-            } else {
-                $values[] = $item;
-            }
-        }
-
-        return implode(', ', $values);
-    }
-
-    /**
-     * @param  string $messageKey
+     * @param  string $messageKey OPTIONAL
      * @param  string $value      OPTIONAL
      * @return void
      */
-    protected function _error($messageKey, $value = null)
+    protected function _error($messageKey = null, $value = null)
     {
         if ($messageKey === null) {
             $keys = array_keys($this->_messageTemplates);
@@ -345,7 +288,6 @@ abstract class Zend_Validate_Abstract implements Zend_Validate_Interface
      * Set translation object
      *
      * @param  Zend_Translate|Zend_Translate_Adapter|null $translator
-     * @throws Zend_Validate_Exception
      * @return Zend_Validate_Abstract
      */
     public function setTranslator($translator = null)
@@ -368,10 +310,6 @@ abstract class Zend_Validate_Abstract implements Zend_Validate_Interface
      */
     public function getTranslator()
     {
-        if ($this->translatorIsDisabled()) {
-            return null;
-        }
-
         if (null === $this->_translator) {
             return self::getDefaultTranslator();
         }
@@ -380,20 +318,10 @@ abstract class Zend_Validate_Abstract implements Zend_Validate_Interface
     }
 
     /**
-     * Does this validator have its own specific translator?
-     *
-     * @return bool
-     */
-    public function hasTranslator()
-    {
-        return (bool)$this->_translator;
-    }
-
-    /**
      * Set default translation object for all validate objects
      *
      * @param  Zend_Translate|Zend_Translate_Adapter|null $translator
-     * @throws Zend_Validate_Exception
+     * @return void
      */
     public static function setDefaultTranslator($translator = null)
     {
@@ -425,59 +353,6 @@ abstract class Zend_Validate_Abstract implements Zend_Validate_Interface
                 }
             }
         }
-
         return self::$_defaultTranslator;
-    }
-
-    /**
-     * Is there a default translation object set?
-     *
-     * @return boolean
-     */
-    public static function hasDefaultTranslator()
-    {
-        return (bool)self::$_defaultTranslator;
-    }
-
-    /**
-     * Indicate whether or not translation should be disabled
-     *
-     * @param  bool $flag
-     * @return Zend_Validate_Abstract
-     */
-    public function setDisableTranslator($flag)
-    {
-        $this->_translatorDisabled = (bool) $flag;
-        return $this;
-    }
-
-    /**
-     * Is translation disabled?
-     *
-     * @return bool
-     */
-    public function translatorIsDisabled()
-    {
-        return $this->_translatorDisabled;
-    }
-
-    /**
-     * Returns the maximum allowed message length
-     *
-     * @return integer
-     */
-    public static function getMessageLength()
-    {
-        return self::$_messageLength;
-    }
-
-    /**
-     * Sets the maximum allowed message length
-     *
-     * @param integer $length
-     */
-    public static function setMessageLength($length = -1)
-    {
-        self::$_messageLength = $length;
     }
 }

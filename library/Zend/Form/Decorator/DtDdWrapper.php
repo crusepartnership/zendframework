@@ -15,7 +15,7 @@
  * @category   Zend
  * @package    Zend_Form
  * @subpackage Decorator
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -25,15 +25,15 @@ require_once 'Zend/Form/Decorator/Abstract.php';
 /**
  * Zend_Form_Decorator_DtDdWrapper
  *
- * Creates an empty <dt> item, and wraps the content in a <dd>. Used as a
+ * Creates an empty <dt> item, and wraps the content in a <dd>. Used as a 
  * default decorator for subforms and display groups.
- *
+ * 
  * @category   Zend
  * @package    Zend_Form
  * @subpackage Decorator
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id$
+ * @version    $Id: DtDdWrapper.php 9309 2008-04-25 16:06:59Z matthew $
  */
 class Zend_Form_Decorator_DtDdWrapper extends Zend_Form_Decorator_Abstract
 {
@@ -44,27 +44,17 @@ class Zend_Form_Decorator_DtDdWrapper extends Zend_Form_Decorator_Abstract
     protected $_placement = null;
 
     /**
-     * Render
+     * Render 
      *
      * Renders as the following:
-     * <dt>$dtLabel</dt>
+     * <dt></dt>
      * <dd>$content</dd>
-     *
-     * $dtLabel can be set via 'dtLabel' option, defaults to '\&#160;'
-     *
-     * @param  string $content
+     * 
+     * @param  string $content 
      * @return string
      */
     public function render($content)
     {
-        $elementName = $this->getElement()->getName();
-
-        $dtLabel = $this->getOption('dtLabel');
-        if( null === $dtLabel ) {
-            $dtLabel = '&#160;';
-        }
-
-        return '<dt id="' . $elementName . '-label">' . $dtLabel . '</dt>' .
-               '<dd id="' . $elementName . '-element">' . $content . '</dd>';
+        return '<dt>&nbsp;</dt><dd>' . $content . '</dd>';
     }
 }

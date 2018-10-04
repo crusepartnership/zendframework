@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_XmlRpc
  * @subpackage Value
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id$
+ * @version    $Id: DateTime.php 9096 2008-03-30 19:04:05Z thomas $
  */
 
 
@@ -31,24 +31,11 @@ require_once 'Zend/XmlRpc/Value/Scalar.php';
  * @category   Zend
  * @package    Zend_XmlRpc
  * @subpackage Value
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_XmlRpc_Value_DateTime extends Zend_XmlRpc_Value_Scalar
 {
-    /**
-     * PHP compatible format string for XML/RPC datetime values
-     *
-     * @var string
-     */
-    protected $_phpFormatString = 'Ymd\\TH:i:s';
-
-    /**
-     * ISO compatible format string for XML/RPC datetime values
-     *
-     * @var string
-     */
-    protected $_isoFormatString = 'yyyyMMddTHH:mm:ss';
 
     /**
      * Set the value of a dateTime.iso8601 native type
@@ -62,21 +49,22 @@ class Zend_XmlRpc_Value_DateTime extends Zend_XmlRpc_Value_Scalar
     {
         $this->_type = self::XMLRPC_TYPE_DATETIME;
 
-        if ($value instanceof Zend_Date) {
-            $this->_value = $value->toString($this->_isoFormatString);
-        } elseif ($value instanceof DateTime) {
-            $this->_value = $value->format($this->_phpFormatString);
-        } elseif (is_numeric($value)) { // The value is numeric, we make sure it is an integer
-            $this->_value = date($this->_phpFormatString, (int)$value);
+        // If the value is not numeric, we try to convert it to a timestamp (using the strtotime function)
+        if (is_numeric($value)) {   // The value is numeric, we make sure it is an integer
+            $value = (int)$value;
         } else {
-            $timestamp = new DateTime($value);
-            if ($timestamp === false) { // cannot convert the value to a timestamp
-                require_once 'Zend/XmlRpc/Value/Exception.php';
+            $value = strtotime($value);
+            if ($value === false || $value == -1) { // cannot convert the value to a timestamp
                 throw new Zend_XmlRpc_Value_Exception('Cannot convert given value \''. $value .'\' to a timestamp');
             }
-
-            $this->_value = $timestamp->format($this->_phpFormatString); // Convert the timestamp to iso8601 format
         }
+        $value = date('c', $value); // Convert the timestamp to iso8601 format
+
+        // Strip out TZ information and dashes
+        $value = preg_replace('/(\+|-)\d{2}:\d{2}$/', '', $value);
+        $value = str_replace('-', '', $value);
+
+        $this->_value = $value;
     }
 
     /**
@@ -88,4 +76,6 @@ class Zend_XmlRpc_Value_DateTime extends Zend_XmlRpc_Value_Scalar
     {
         return $this->_value;
     }
+
 }
+

@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_XmlRpc
  * @subpackage Value
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id$
+ * @version    $Id: Scalar.php 9095 2008-03-30 18:52:31Z thomas $
  */
 
 
@@ -31,23 +31,30 @@ require_once 'Zend/XmlRpc/Value.php';
  * @category   Zend
  * @package    Zend_XmlRpc
  * @subpackage Value
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_XmlRpc_Value_Scalar extends Zend_XmlRpc_Value
 {
-    /**
-     * Generate the XML code that represent a scalar native MXL-RPC value
-     *
-     * @return void
-     */
-    protected function _generateXml()
-    {
-        $generator = $this->getGenerator();
 
-        $generator->openElement('value')
-                  ->openElement($this->_type, $this->_value)
-                  ->closeElement($this->_type)
-                  ->closeElement('value');
+    /**
+     * Return the XML code that represent a scalar native MXL-RPC value
+     *
+     * @return string
+     */
+    public function saveXML()
+    {
+        if (!$this->_as_xml) {   // The XML code was not calculated yet
+            $dom   = new DOMDocument('1.0');
+            $value = $dom->appendChild($dom->createElement('value'));
+            $type  = $value->appendChild($dom->createElement($this->_type));
+            $type->appendChild($dom->createTextNode($this->getValue()));
+
+            $this->_as_dom = $value;
+            $this->_as_xml = $this->_stripXmlDeclaration($dom);
+        }
+
+        return $this->_as_xml;
     }
 }
+

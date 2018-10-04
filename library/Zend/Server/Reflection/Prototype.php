@@ -14,9 +14,14 @@
  *
  * @category   Zend
  * @package    Zend_Server
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
+
+/**
+ * Zend_Server_Reflection_Exception
+ */
+require_once 'Zend/Server/Reflection/Exception.php';
 
 /**
  * Zend_Server_Reflection_ReturnValue
@@ -36,9 +41,9 @@ require_once 'Zend/Server/Reflection/Parameter.php';
  * @category   Zend
  * @package    Zend_Server
  * @subpackage Reflection
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version $Id$
+ * @version $Id: Prototype.php 12619 2008-11-13 15:24:29Z alexander $
  */
 class Zend_Server_Reflection_Prototype
 {
@@ -54,14 +59,12 @@ class Zend_Server_Reflection_Prototype
         $this->_return = $return;
 
         if (!is_array($params) && (null !== $params)) {
-            require_once 'Zend/Server/Reflection/Exception.php';
             throw new Zend_Server_Reflection_Exception('Invalid parameters');
         }
 
         if (is_array($params)) {
             foreach ($params as $param) {
                 if (!$param instanceof Zend_Server_Reflection_Parameter) {
-                    require_once 'Zend/Server/Reflection/Exception.php';
                     throw new Zend_Server_Reflection_Exception('One or more params are invalid');
                 }
             }

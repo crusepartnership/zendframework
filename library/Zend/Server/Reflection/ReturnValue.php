@@ -14,9 +14,14 @@
  *
  * @category   Zend
  * @package    Zend_Server
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
+
+/**
+ * Zend_Server_Reflection_Exception
+ */
+require_once 'Zend/Server/Reflection/Exception.php';
 
 /**
  * Return value reflection
@@ -26,9 +31,9 @@
  * @category   Zend
  * @package    Zend_Server
  * @subpackage Reflection
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version $Id$
+ * @version $Id: ReturnValue.php 12619 2008-11-13 15:24:29Z alexander $
  */
 class Zend_Server_Reflection_ReturnValue
 {
@@ -75,7 +80,6 @@ class Zend_Server_Reflection_ReturnValue
     public function setType($type)
     {
         if (!is_string($type) && (null !== $type)) {
-            require_once 'Zend/Server/Reflection/Exception.php';
             throw new Zend_Server_Reflection_Exception('Invalid parameter type');
         }
 
@@ -101,7 +105,6 @@ class Zend_Server_Reflection_ReturnValue
     public function setDescription($description)
     {
         if (!is_string($description) && (null !== $description)) {
-            require_once 'Zend/Server/Reflection/Exception.php';
             throw new Zend_Server_Reflection_Exception('Invalid parameter description');
         }
 

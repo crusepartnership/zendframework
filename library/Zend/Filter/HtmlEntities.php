@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework
  *
@@ -14,84 +15,51 @@
  *
  * @category   Zend
  * @package    Zend_Filter
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id$
+ * @version    $Id: HtmlEntities.php 11783 2008-10-09 17:38:54Z andries $
  */
+
 
 /**
  * @see Zend_Filter_Interface
  */
 require_once 'Zend/Filter/Interface.php';
 
+
 /**
  * @category   Zend
  * @package    Zend_Filter
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Filter_HtmlEntities implements Zend_Filter_Interface
 {
     /**
-     * Corresponds to the second htmlentities() argument
+     * Corresponds to second htmlentities() argument
      *
      * @var integer
      */
     protected $_quoteStyle;
 
     /**
-     * Corresponds to the third htmlentities() argument
+     * Corresponds to third htmlentities() argument
      *
      * @var string
      */
-    protected $_encoding;
-
-    /**
-     * Corresponds to the forth htmlentities() argument
-     *
-     * @var unknown_type
-     */
-    protected $_doubleQuote;
+    protected $_charSet;
 
     /**
      * Sets filter options
      *
-     * @param  integer|array $quoteStyle
+     * @param  integer $quoteStyle
      * @param  string  $charSet
      * @return void
      */
-    public function __construct($options = array())
+    public function __construct($quoteStyle = ENT_COMPAT, $charSet = 'ISO-8859-1')
     {
-        if ($options instanceof Zend_Config) {
-            $options = $options->toArray();
-        } else if (!is_array($options)) {
-            $options = func_get_args();
-            $temp['quotestyle'] = array_shift($options);
-            if (!empty($options)) {
-                $temp['charset'] = array_shift($options);
-            }
-
-            $options = $temp;
-        }
-
-        if (!isset($options['quotestyle'])) {
-            $options['quotestyle'] = ENT_COMPAT;
-        }
-
-        if (!isset($options['encoding'])) {
-            $options['encoding'] = 'UTF-8';
-        }
-        if (isset($options['charset'])) {
-            $options['encoding'] = $options['charset'];
-        }
-
-        if (!isset($options['doublequote'])) {
-            $options['doublequote'] = true;
-        }
-
-        $this->setQuoteStyle($options['quotestyle']);
-        $this->setEncoding($options['encoding']);
-        $this->setDoubleQuote($options['doublequote']);
+        $this->_quoteStyle = $quoteStyle;
+        $this->_charSet    = $charSet;
     }
 
     /**
@@ -116,73 +84,25 @@ class Zend_Filter_HtmlEntities implements Zend_Filter_Interface
         return $this;
     }
 
-
-    /**
-     * Get encoding
-     *
-     * @return string
-     */
-    public function getEncoding()
-    {
-         return $this->_encoding;
-    }
-
-    /**
-     * Set encoding
-     *
-     * @param  string $value
-     * @return Zend_Filter_HtmlEntities
-     */
-    public function setEncoding($value)
-    {
-        $this->_encoding = (string) $value;
-        return $this;
-    }
-
     /**
      * Returns the charSet option
-     *
-     * Proxies to {@link getEncoding()}
      *
      * @return string
      */
     public function getCharSet()
     {
-        return $this->getEncoding();
+        return $this->_charSet;
     }
 
     /**
      * Sets the charSet option
-     *
-     * Proxies to {@link setEncoding()}
      *
      * @param  string $charSet
      * @return Zend_Filter_HtmlEntities Provides a fluent interface
      */
     public function setCharSet($charSet)
     {
-        return $this->setEncoding($charSet);
-    }
-
-    /**
-     * Returns the doubleQuote option
-     *
-     * @return boolean
-     */
-    public function getDoubleQuote()
-    {
-        return $this->_doubleQuote;
-    }
-
-    /**
-     * Sets the doubleQuote option
-     *
-     * @param boolean $doubleQuote
-     * @return Zend_Filter_HtmlEntities Provides a fluent interface
-     */
-    public function setDoubleQuote($doubleQuote)
-    {
-        $this->_doubleQuote = (boolean) $doubleQuote;
+        $this->_charSet = $charSet;
         return $this;
     }
 
@@ -197,20 +117,6 @@ class Zend_Filter_HtmlEntities implements Zend_Filter_Interface
      */
     public function filter($value)
     {
-        $filtered = htmlentities((string) $value, $this->getQuoteStyle(), $this->getEncoding(), $this->getDoubleQuote());
-        if (strlen((string) $value) && !strlen($filtered)) {
-            if (!function_exists('iconv')) {
-                require_once 'Zend/Filter/Exception.php';
-                throw new Zend_Filter_Exception('Encoding mismatch has resulted in htmlentities errors');
-            }
-            $enc      = $this->getEncoding();
-            $value    = iconv('', $enc . '//IGNORE', (string) $value);
-            $filtered = htmlentities($value, $this->getQuoteStyle(), $enc, $this->getDoubleQuote());
-            if (!strlen($filtered)) {
-                require_once 'Zend/Filter/Exception.php';
-                throw new Zend_Filter_Exception('Encoding mismatch has resulted in htmlentities errors');
-            }
-        }
-        return $filtered;
+        return htmlentities((string) $value, $this->_quoteStyle, $this->_charSet);
     }
 }

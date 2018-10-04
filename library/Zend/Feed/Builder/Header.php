@@ -15,9 +15,9 @@
  *
  * @category   Zend
  * @package    Zend_Feed
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id$
+ * @version    $Id: Header.php 13891 2009-01-31 11:41:00Z yoshida@zend.co.jp $
  */
 
 /**
@@ -39,7 +39,7 @@ require_once 'Zend/Uri.php';
  *
  * @category   Zend
  * @package    Zend_Feed
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Feed_Builder_Header extends ArrayObject

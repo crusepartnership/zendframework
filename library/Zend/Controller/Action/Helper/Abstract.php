@@ -15,21 +15,27 @@
  * @category   Zend
  * @package    Zend_Controller
  * @subpackage Zend_Controller_Action_Helper
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id$
  */
+
+
+/**
+ * @see Zend_Controller_Exception
+ */
+require_once 'Zend/Controller/Action/Exception.php';
 
 /**
  * @see Zend_Controller_Action
  */
 require_once 'Zend/Controller/Action.php';
 
+
 /**
  * @category   Zend
  * @package    Zend_Controller
  * @subpackage Zend_Controller_Action_Helper
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_Controller_Action_Helper_Abstract
@@ -70,12 +76,16 @@ abstract class Zend_Controller_Action_Helper_Abstract
 
     /**
      * Retrieve front controller instance
-     *
+     * 
      * @return Zend_Controller_Front
      */
     public function getFrontController()
     {
-        return Zend_Controller_Front::getInstance();
+        if (null === $this->_frontController) {
+            $this->_frontController = Zend_Controller_Front::getInstance();
+        }
+
+        return $this->_frontController;
     }
 
     /**
@@ -142,15 +152,13 @@ abstract class Zend_Controller_Action_Helper_Abstract
      */
     public function getName()
     {
-        $fullClassName = get_class($this);
-        if (strpos($fullClassName, '_') !== false) {
-            $helperName = strrchr($fullClassName, '_');
-            return ltrim($helperName, '_');
-        } elseif (strpos($fullClassName, '\\') !== false) {
-            $helperName = strrchr($fullClassName, '\\');
-            return ltrim($helperName, '\\');
+        $full_class_name = get_class($this);
+
+        if (strpos($full_class_name, '_') !== false) {
+            $helper_name = strrchr($full_class_name, '_');
+            return ltrim($helper_name, '_');
         } else {
-            return $fullClassName;
+            return $full_class_name;
         }
     }
 }

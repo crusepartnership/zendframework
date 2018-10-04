@@ -15,10 +15,16 @@
  *
  * @category   Zend
  * @package    Zend_Db
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id$
+ * @version    $Id: Db.php 9573 2008-05-29 22:25:26Z peptolab $
  */
+
+
+/**
+ * @see Zend_Loader
+ */
+require_once 'Zend/Loader.php';
 
 
 /**
@@ -26,7 +32,7 @@
  *
  * @category   Zend
  * @package    Zend_Db
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Db
@@ -43,24 +49,9 @@ class Zend_Db
     const CASE_FOLDING = 'caseFolding';
 
     /**
-     * Use the FETCH_MODE constant in the config of a Zend_Db_Adapter.
-     */
-    const FETCH_MODE = 'fetchMode';
-
-    /**
      * Use the AUTO_QUOTE_IDENTIFIERS constant in the config of a Zend_Db_Adapter.
      */
     const AUTO_QUOTE_IDENTIFIERS = 'autoQuoteIdentifiers';
-
-    /**
-     * Use the ALLOW_SERIALIZATION constant in the config of a Zend_Db_Adapter.
-     */
-    const ALLOW_SERIALIZATION = 'allowSerialization';
-
-    /**
-     * Use the AUTO_RECONNECT_ON_UNSERIALIZE constant in the config of a Zend_Db_Adapter.
-     */
-    const AUTO_RECONNECT_ON_UNSERIALIZE = 'autoReconnectOnUnserialize';
 
     /**
      * Use the INT_TYPE, BIGINT_TYPE, and FLOAT_TYPE with the quote() method.
@@ -176,10 +167,7 @@ class Zend_Db
      *
      * First argument may be a string containing the base of the adapter class
      * name, e.g. 'Mysqli' corresponds to class Zend_Db_Adapter_Mysqli.  This
-     * name is currently case-insensitive, but is not ideal to rely on this behavior.
-     * If your class is named 'My_Company_Pdo_Mysql', where 'My_Company' is the namespace
-     * and 'Pdo_Mysql' is the adapter name, it is best to use the name exactly as it
-     * is defined in the class.  This will ensure proper use of the factory API.
+     * is case-insensitive.
      *
      * First argument may alternatively be an object of type Zend_Config.
      * The adapter class base name is read from the 'adapter' property.
@@ -249,19 +237,14 @@ class Zend_Db
             }
             unset($config['adapterNamespace']);
         }
-
-        // Adapter no longer normalized- see http://framework.zend.com/issues/browse/ZF-5606
-        $adapterName = $adapterNamespace . '_';
-        $adapterName .= str_replace(' ', '_', ucwords(str_replace('_', ' ', strtolower($adapter))));
+        $adapterName = strtolower($adapterNamespace . '_' . $adapter);
+        $adapterName = str_replace(' ', '_', ucwords(str_replace('_', ' ', $adapterName)));
 
         /*
          * Load the adapter class.  This throws an exception
          * if the specified class cannot be loaded.
          */
-        if (!class_exists($adapterName)) {
-            require_once 'Zend/Loader.php';
-            Zend_Loader::loadClass($adapterName);
-        }
+        @Zend_Loader::loadClass($adapterName);
 
         /*
          * Create an instance of the adapter class.

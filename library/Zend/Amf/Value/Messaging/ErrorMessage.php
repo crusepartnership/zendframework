@@ -15,12 +15,11 @@
  * @category   Zend
  * @package    Zend_Amf
  * @subpackage Value
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id$
  */
 
-/** @see Zend_Amf_Value_Messaging_AcknowledgeMessage */
+/** Zend_Amf_Value_Messaging_AcknowledgeMessage */
 require_once 'Zend/Amf/Value/Messaging/AcknowledgeMessage.php';
 
 /**
@@ -30,7 +29,7 @@ require_once 'Zend/Amf/Value/Messaging/AcknowledgeMessage.php';
  *
  * @package    Zend_Amf
  * @subpackage Value
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Amf_Value_Messaging_ErrorMessage extends Zend_Amf_Value_Messaging_AcknowledgeMessage

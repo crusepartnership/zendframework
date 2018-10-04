@@ -16,19 +16,17 @@
  * @category   Zend
  * @package    Zend_Service
  * @subpackage Yahoo
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id$
+ * @version    $Id: Yahoo.php 13006 2008-12-03 21:17:01Z matthew $
  */
 
-/** @see Zend_Xml_Security */
-require_once 'Zend/Xml/Security.php';
 
 /**
  * @category   Zend
  * @package    Zend_Service
  * @subpackage Yahoo
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Service_Yahoo
@@ -101,7 +99,8 @@ class Zend_Service_Yahoo
         }
 
         $dom = new DOMDocument();
-        $dom = Zend_Xml_Security::scan($response->getBody(), $dom);
+        $dom->loadXML($response->getBody());
+
         self::_checkErrors($dom);
 
         /**
@@ -156,7 +155,8 @@ class Zend_Service_Yahoo
         }
 
         $dom = new DOMDocument();
-        $dom = Zend_Xml_Security::scan($response->getBody(), $dom);
+        $dom->loadXML($response->getBody());
+
         self::_checkErrors($dom);
 
         /**
@@ -219,7 +219,8 @@ class Zend_Service_Yahoo
         }
 
         $dom = new DOMDocument();
-        $dom = Zend_Xml_Security::scan($response->getBody(), $dom);
+        $dom->loadXML($response->getBody());
+
         self::_checkErrors($dom);
 
         /**
@@ -272,7 +273,8 @@ class Zend_Service_Yahoo
         }
 
         $dom = new DOMDocument();
-        $dom = Zend_Xml_Security::scan($response->getBody(), $dom);
+        $dom->loadXML($response->getBody());
+
         self::_checkErrors($dom);
 
         /**
@@ -318,7 +320,8 @@ class Zend_Service_Yahoo
         }
 
         $dom = new DOMDocument();
-        $dom = Zend_Xml_Security::scan($response->getBody(), $dom);
+        $dom->loadXML($response->getBody());
+
         self::_checkErrors($dom);
 
         /**
@@ -371,7 +374,8 @@ class Zend_Service_Yahoo
         }
 
         $dom = new DOMDocument();
-        $dom = Zend_Xml_Security::scan($response->getBody(), $dom);
+        $dom->loadXML($response->getBody());
+
         self::_checkErrors($dom);
 
         /**
@@ -407,6 +411,7 @@ class Zend_Service_Yahoo
     {
         static $defaultOptions = array('type'     => 'all',
                                        'start'    => 1,
+                                       'license'  => 'any',
                                        'results'  => 10,
                                        'format'   => 'any');
 
@@ -427,7 +432,8 @@ class Zend_Service_Yahoo
         }
 
         $dom = new DOMDocument();
-        $dom = Zend_Xml_Security::scan($response->getBody(), $dom);
+        $dom->loadXML($response->getBody());
+
         self::_checkErrors($dom);
 
         /**
@@ -831,14 +837,11 @@ class Zend_Service_Yahoo
         $this->_validateInArray('type', $options['type'], array('all', 'any', 'phrase'));
         $this->_validateInArray('format', $options['format'], array('any', 'html', 'msword', 'pdf', 'ppt', 'rss',
                                                                     'txt', 'xls'));
-        if (isset($options['license'])) {
-            $this->_validateInArray('license', $options['license'], array('any', 'cc_any', 'cc_commercial',
+        $this->_validateInArray('license', $options['license'], array('any', 'cc_any', 'cc_commercial',
                                                                       'cc_modifiable'));
-        }
-
         if (isset($options['region'])){
             $this->_validateInArray('region', $options['region'], array('ar', 'au', 'at', 'br', 'ca', 'ct', 'dk', 'fi',
-                                                                          'fr', 'de', 'in', 'id', 'it', 'my', 'mx',
+                                                                          'fr', 'de', 'in', 'id', 'it', 'my', 'mx', 
                                                                           'nl', 'no', 'ph', 'ru', 'sg', 'es', 'se',
                                                                           'ch', 'th', 'uk', 'us'));
         }

@@ -16,9 +16,9 @@
  * @category   Zend
  * @package    Zend_Service
  * @subpackage Audioscrobbler
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id$
+ * @version    $Id: Audioscrobbler.php 13633 2009-01-14 21:05:51Z beberlei $
  */
 
 
@@ -27,14 +27,12 @@
  */
 require_once 'Zend/Http/Client.php';
 
-/** @see Zend_Xml_Security */
-require_once 'Zend/Xml/Security.php';
 
 /**
  * @category   Zend
  * @package    Zend_Service
  * @subpackage Audioscrobbler
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Service_Audioscrobbler
@@ -56,6 +54,22 @@ class Zend_Service_Audioscrobbler
     protected $_params;
 
     /**
+     * Flag if we're doing testing or not
+     *
+     * @var     boolean
+     * @access  protected
+     */
+    protected $_testing;
+
+    /**
+     * Http response used for testing purposes
+     *
+     * @var     string
+     * @access  protected
+     */
+    protected $_testingResponse;
+
+    /**
      * Holds error information (e.g., for handling simplexml_load_string() warnings)
      *
      * @var     array
@@ -64,56 +78,33 @@ class Zend_Service_Audioscrobbler
     protected $_error = null;
 
 
+    //////////////////////////////////////////////////////////
+    ///////////////////  CORE METHODS  ///////////////////////
+    //////////////////////////////////////////////////////////
+
+
     /**
-     * Sets up character encoding, instantiates the HTTP client, and assigns the web service version.
+     * Sets up character encoding, instantiates the HTTP client, and assigns the web service version
+     * and testing parameters (if provided).
+     *
+     * @param  boolean $testing
+     * @param  string  $testingResponse
+     * @return void
      */
-    public function __construct()
+    public function __construct($testing = false, $testingResponse = null)
     {
         $this->set('version', '1.0');
 
-        if (PHP_VERSION_ID < 50600) {
-            iconv_set_encoding('output_encoding', 'UTF-8');
-            iconv_set_encoding('input_encoding', 'UTF-8');
-            iconv_set_encoding('internal_encoding', 'UTF-8');
-        } else {
-            ini_set('output_encoding', 'UTF-8');
-            ini_set('input_encoding', 'UTF-8');
-            ini_set('default_charset', 'UTF-8');
-        }
-    }
+        iconv_set_encoding('output_encoding', 'UTF-8');
+        iconv_set_encoding('input_encoding', 'UTF-8');
+        iconv_set_encoding('internal_encoding', 'UTF-8');
 
-    /**
-     * Set Http Client
-     *
-     * @param Zend_Http_Client $client
-     */
-    public function setHttpClient(Zend_Http_Client $client)
-    {
-        $this->_client = $client;
-    }
-
-    /**
-     * Get current http client.
-     *
-     * @return Zend_Http_Client
-     */
-    public function getHttpClient()
-    {
-        if($this->_client == null) {
-            $this->lazyLoadHttpClient();
-        }
-        return $this->_client;
-    }
-
-    /**
-     * Lazy load Http Client if none is instantiated yet.
-     *
-     * @return void
-     */
-    protected function lazyLoadHttpClient()
-    {
         $this->_client = new Zend_Http_Client();
+
+        $this->_testing          = (boolean) $testing;
+        $this->_testingResponse  = (string) $testingResponse;
     }
+
 
     /**
      * Returns a field value, or false if the named field does not exist
@@ -160,12 +151,24 @@ class Zend_Service_Audioscrobbler
         $params  = (string) $params;
 
         if ($params === '') {
-            $this->getHttpClient()->setUri("http://ws.audioscrobbler.com{$service}");
+            $this->_client->setUri("http://ws.audioscrobbler.com{$service}");
         } else {
-            $this->getHttpClient()->setUri("http://ws.audioscrobbler.com{$service}?{$params}");
+            $this->_client->setUri("http://ws.audioscrobbler.com{$service}?{$params}");
         }
 
-        $response     = $this->getHttpClient()->request();
+        if ($this->_testing) {
+            /**
+             * @see Zend_Http_Client_Adapter_Test
+             */
+            require_once 'Zend/Http/Client/Adapter/Test.php';
+            $adapter = new Zend_Http_Client_Adapter_Test();
+
+            $this->_client->setConfig(array('adapter' => $adapter));
+
+            $adapter->setResponse($this->_testingResponse);
+        }
+
+        $response     = $this->_client->request();
         $responseBody = $response->getBody();
 
         if (preg_match('/No such path/', $responseBody)) {
@@ -190,7 +193,7 @@ class Zend_Service_Audioscrobbler
 
         set_error_handler(array($this, '_errorHandler'));
 
-        if (!$simpleXmlElementResponse = Zend_Xml_Security::scan($responseBody)) {
+        if (!$simpleXmlElementResponse = simplexml_load_string($responseBody)) {
             restore_error_handler();
             /**
              * @see Zend_Service_Exception
@@ -207,9 +210,12 @@ class Zend_Service_Audioscrobbler
         return $simpleXmlElementResponse;
     }
 
+    //////////////////////////////////////////////////////////
+    ///////////////////////  USER  ///////////////////////////
+    //////////////////////////////////////////////////////////
+
     /**
     * Utility function to get Audioscrobbler profile information (eg: Name, Gender)
-     *
     * @return array containing information
     */
     public function userGetProfileInformation()
@@ -220,7 +226,6 @@ class Zend_Service_Audioscrobbler
 
     /**
      * Utility function get this user's 50 most played artists
-     *
      * @return array containing info
     */
     public function userGetTopArtists()
@@ -231,8 +236,7 @@ class Zend_Service_Audioscrobbler
 
     /**
      * Utility function to get this user's 50 most played albums
-     *
-     * @return SimpleXMLElement object containing result set
+     * @return SimpleXML object containing result set
     */
     public function userGetTopAlbums()
     {
@@ -252,8 +256,7 @@ class Zend_Service_Audioscrobbler
 
     /**
      * Utility function to get this user's 50 most used tags
-     *
-     * @return SimpleXMLElement object containing result set
+     * @return SimpleXML object containing result set
      */
     public function userGetTopTags()
     {
@@ -263,8 +266,8 @@ class Zend_Service_Audioscrobbler
 
     /**
      * Utility function that returns the user's top tags used most used on a specific artist
+     * @return SimpleXML object containing result set
      *
-     * @return SimpleXMLElement object containing result set
      */
     public function userGetTopTagsForArtist()
     {
@@ -275,8 +278,8 @@ class Zend_Service_Audioscrobbler
 
     /**
      * Utility function that returns this user's top tags for an album
+     * @return SimpleXML object containing result set
      *
-     * @return SimpleXMLElement object containing result set
      */
     public function userGetTopTagsForAlbum()
     {
@@ -287,8 +290,8 @@ class Zend_Service_Audioscrobbler
 
     /**
      * Utility function that returns this user's top tags for a track
+     * @return SimpleXML object containing result set
      *
-     * @return SimpleXMLElement object containing result set
      */
     public function userGetTopTagsForTrack()
     {
@@ -299,7 +302,7 @@ class Zend_Service_Audioscrobbler
 
     /**
      * Utility function that retrieves this user's list of friends
-     * @return SimpleXMLElement object containing result set
+     * @return SimpleXML object containing result set
      */
     public function userGetFriends()
     {
@@ -309,8 +312,8 @@ class Zend_Service_Audioscrobbler
 
     /**
      * Utility function that returns a list of people with similar listening preferences to this user
+     * @return SimpleXML object containing result set
      *
-     * @return SimpleXMLElement object containing result set
      */
     public function userGetNeighbours()
     {
@@ -320,8 +323,8 @@ class Zend_Service_Audioscrobbler
 
     /**
      * Utility function that returns a list of the 10 most recent tracks played by this user
+     * @return SimpleXML object containing result set
      *
-     * @return SimpleXMLElement object containing result set
      */
     public function userGetRecentTracks()
     {
@@ -331,8 +334,8 @@ class Zend_Service_Audioscrobbler
 
     /**
      * Utility function that returns a list of the 10 tracks most recently banned by this user
+     * @return SimpleXML object containing result set
      *
-     * @return SimpleXMLElement object containing result set
      */
     public function userGetRecentBannedTracks()
     {
@@ -342,8 +345,8 @@ class Zend_Service_Audioscrobbler
 
     /**
      * Utility function that returns a list of the 10 tracks most recently loved by this user
+     * @return SimpleXML object containing result set
      *
-     * @return SimpleXMLElement object containing result set
      */
     public function userGetRecentLovedTracks()
     {
@@ -353,10 +356,9 @@ class Zend_Service_Audioscrobbler
 
     /**
      * Utility function that returns a list of dates of available weekly charts for a this user
-     *
      * Should actually be named userGetWeeklyChartDateList() but we have to follow audioscrobbler's naming
+     * @return SimpleXML object containing result set
      *
-     * @return SimpleXMLElement object containing result set
      */
     public function userGetWeeklyChartList()
     {
@@ -367,10 +369,10 @@ class Zend_Service_Audioscrobbler
 
     /**
      * Utility function that returns weekly album chart data for this user
+     * @return SimpleXML object containing result set
      *
      * @param integer $from optional UNIX timestamp for start of date range
      * @param integer $to optional UNIX timestamp for end of date range
-     * @return SimpleXMLElement object containing result set
      */
     public function userGetWeeklyAlbumChart($from = NULL, $to = NULL)
     {
@@ -388,10 +390,10 @@ class Zend_Service_Audioscrobbler
 
     /**
      * Utility function that returns weekly artist chart data for this user
+     * @return SimpleXML object containing result set
      *
      * @param integer $from optional UNIX timestamp for start of date range
      * @param integer $to optional UNIX timestamp for end of date range
-     * @return SimpleXMLElement object containing result set
      */
     public function userGetWeeklyArtistChart($from = NULL, $to = NULL)
     {
@@ -409,10 +411,10 @@ class Zend_Service_Audioscrobbler
 
     /**
      * Utility function that returns weekly track chart data for this user
+     * @return SimpleXML object containing result set
      *
      * @param integer $from optional UNIX timestamp for start of date range
      * @param integer $to optional UNIX timestamp for end of date range
-     * @return SimpleXMLElement object containing result set
      */
     public function userGetWeeklyTrackChart($from = NULL, $to = NULL)
     {
@@ -429,10 +431,20 @@ class Zend_Service_Audioscrobbler
     }
 
 
+    //////////////////////////////////////////////////////////
+    ///////////////////////  ARTIST  /////////////////////////
+    //////////////////////////////////////////////////////////
+
+    /**
+     * Public functions for retrieveing artist-specific information
+     *
+     */
+
+
     /**
      * Utility function that returns a list of artists similiar to this artist
+     * @return SimpleXML object containing result set
      *
-     * @return SimpleXMLElement object containing result set
      */
     public function artistGetRelatedArtists()
     {
@@ -442,8 +454,8 @@ class Zend_Service_Audioscrobbler
 
     /**
      * Utility function that returns a list of this artist's top listeners
+     * @return SimpleXML object containing result set
      *
-     * @return SimpleXMLElement object containing result set
      */
     public function artistGetTopFans()
     {
@@ -453,8 +465,8 @@ class Zend_Service_Audioscrobbler
 
     /**
      * Utility function that returns a list of this artist's top-rated tracks
+     * @return SimpleXML object containing result set
      *
-     * @return SimpleXMLElement object containing result set
      */
     public function artistGetTopTracks()
     {
@@ -464,8 +476,8 @@ class Zend_Service_Audioscrobbler
 
     /**
      * Utility function that returns a list of this artist's top-rated albums
+     * @return SimpleXML object containing result set
      *
-     * @return SimpleXMLElement object containing result set
      */
     public function artistGetTopAlbums()
     {
@@ -475,8 +487,8 @@ class Zend_Service_Audioscrobbler
 
     /**
      * Utility function that returns a list of this artist's top-rated tags
+     * @return SimpleXML object containing result set
      *
-     * @return SimpleXMLElement object containing result set
      */
     public function artistGetTopTags()
     {
@@ -484,103 +496,70 @@ class Zend_Service_Audioscrobbler
         return $this->_getInfo($service);
     }
 
+    //////////////////////////////////////////////////////////
+    ///////////////////////  ALBUM  //////////////////////////
+    //////////////////////////////////////////////////////////
 
-    /**
-     * Get information about an album
-     *
-     * @return SimpleXMLElement
-     */
     public function albumGetInfo()
     {
         $service = "/{$this->get('version')}/album/{$this->get('artist')}/{$this->get('album')}/info.xml";
         return $this->_getInfo($service);
     }
 
-    /**
-     * Get top fans of the current track.
-     *
-     * @return SimpleXMLElement
-     */
+    //////////////////////////////////////////////////////////
+    ///////////////////////  TRACKS //////////////////////////
+    //////////////////////////////////////////////////////////
+
     public function trackGetTopFans()
     {
         $service = "/{$this->get('version')}/track/{$this->get('artist')}/{$this->get('track')}/fans.xml";
         return $this->_getInfo($service);
     }
 
-    /**
-     * Get top tags of the current track.
-     *
-     * @return SimpleXMLElement
-     */
     public function trackGetTopTags()
     {
         $service = "/{$this->get('version')}/track/{$this->get('artist')}/{$this->get('track')}/toptags.xml";
         return $this->_getInfo($service);
     }
 
-    /**
-     * Get Top Tags.
-     *
-     * @return SimpleXMLElement
-     */
+    //////////////////////////////////////////////////////////
+    ///////////////////////  TAGS   //////////////////////////
+    //////////////////////////////////////////////////////////
+
     public function tagGetTopTags()
     {
         $service = "/{$this->get('version')}/tag/toptags.xml";
         return $this->_getInfo($service);
     }
 
-    /**
-     * Get top albums by current tag.
-     *
-     * @return SimpleXMLElement
-     */
     public function tagGetTopAlbums()
     {
         $service = "/{$this->get('version')}/tag/{$this->get('tag')}/topalbums.xml";
         return $this->_getInfo($service);
     }
 
-    /**
-     * Get top artists by current tag.
-     *
-     * @return SimpleXMLElement
-     */
     public function tagGetTopArtists()
     {
         $service = "/{$this->get('version')}/tag/{$this->get('tag')}/topartists.xml";
         return $this->_getInfo($service);
     }
 
-    /**
-     * Get Top Tracks by currently set tag.
-     *
-     * @return SimpleXMLElement
-     */
     public function tagGetTopTracks()
     {
         $service = "/{$this->get('version')}/tag/{$this->get('tag')}/toptracks.xml";
         return $this->_getInfo($service);
     }
 
-    /**
-     * Get weekly chart list by current set group.
-     *
-     * @see set()
-     * @return SimpleXMLElement
-     */
+    //////////////////////////////////////////////////////////
+    /////////////////////// GROUPS  //////////////////////////
+    //////////////////////////////////////////////////////////
+
     public function groupGetWeeklyChartList()
     {
         $service = "/{$this->get('version')}/group/{$this->get('group')}/weeklychartlist.xml";
         return $this->_getInfo($service);
     }
 
-    /**
-     * Retrieve weekly Artist Charts
-     *
-     * @param  int $from
-     * @param  int $to
-     * @return SimpleXMLElement
-     */
     public function groupGetWeeklyArtistChartList($from = NULL, $to = NULL)
     {
 
@@ -596,13 +575,6 @@ class Zend_Service_Audioscrobbler
         return $this->_getInfo($service, $params);
     }
 
-    /**
-     * Retrieve Weekly Track Charts
-     *
-     * @param  int $from
-     * @param  int $to
-     * @return SimpleXMLElement
-     */
     public function groupGetWeeklyTrackChartList($from = NULL, $to = NULL)
     {
         if ($from != NULL && $to != NULL) {
@@ -617,13 +589,6 @@ class Zend_Service_Audioscrobbler
         return $this->_getInfo($service, $params);
     }
 
-    /**
-     * Retrieve Weekly album charts.
-     *
-     * @param int $from
-     * @param int $to
-     * @return SimpleXMLElement
-     */
     public function groupGetWeeklyAlbumChartList($from = NULL, $to = NULL)
     {
         if ($from != NULL && $to != NULL) {
@@ -648,7 +613,7 @@ class Zend_Service_Audioscrobbler
      * @param  array   $errcontext
      * @return void
      */
-    public function _errorHandler($errno, $errstr, $errfile, $errline, array $errcontext)
+    protected function _errorHandler($errno, $errstr, $errfile, $errline, array $errcontext)
     {
         $this->_error = array(
             'errno'      => $errno,
@@ -669,16 +634,16 @@ class Zend_Service_Audioscrobbler
     public function __call($method, $args)
     {
         if(substr($method, 0, 3) !== "set") {
-            require_once "Zend/Service/Exception.php";
-            throw new Zend_Service_Exception(
+            require_once "Zend/Service/Audioscrobbler/Exception.php";
+            throw new Zend_Service_Audioscrobbler_Exception(
                 "Method ".$method." does not exist in class Zend_Service_Audioscrobbler."
             );
         }
         $field = strtolower(substr($method, 3));
 
         if(!is_array($args) || count($args) != 1) {
-            require_once "Zend/Service/Exception.php";
-            throw new Zend_Service_Exception(
+            require_once "Zend/Service/Audioscrobbler/Exception.php";
+            throw new Zend_Service_Audioscrobbler_Exception(
                 "A value is required for setting a parameter field."
             );
         }

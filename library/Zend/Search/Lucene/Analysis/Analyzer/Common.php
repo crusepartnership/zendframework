@@ -15,27 +15,13 @@
  * @category   Zend
  * @package    Zend_Search_Lucene
  * @subpackage Analysis
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id$
  */
-
-
-/** Define constant used to provide correct file processing order    */
-/** @todo Section should be removed with ZF 2.0 release as obsolete  */
-if (!defined('ZEND_SEARCH_LUCENE_COMMON_ANALYZER_PROCESSED')) {
-    define('ZEND_SEARCH_LUCENE_COMMON_ANALYZER_PROCESSED', true);
-}
 
 
 /** Zend_Search_Lucene_Analysis_Analyzer */
 require_once 'Zend/Search/Lucene/Analysis/Analyzer.php';
-
-/** Zend_Search_Lucene_Analysis_Token */
-require_once 'Zend/Search/Lucene/Analysis/Token.php';
-
-/** Zend_Search_Lucene_Analysis_TokenFilter */
-require_once 'Zend/Search/Lucene/Analysis/TokenFilter.php';
 
 
 /**
@@ -48,7 +34,7 @@ require_once 'Zend/Search/Lucene/Analysis/TokenFilter.php';
  * @category   Zend
  * @package    Zend_Search_Lucene
  * @subpackage Analysis
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_Search_Lucene_Analysis_Analyzer_Common extends Zend_Search_Lucene_Analysis_Analyzer
@@ -83,7 +69,7 @@ abstract class Zend_Search_Lucene_Analysis_Analyzer_Common extends Zend_Search_L
             $token = $filter->normalize($token);
 
             // resulting token can be null if the filter removes it
-            if ($token === null) {
+            if (is_null($token)) {
                 return null;
             }
         }

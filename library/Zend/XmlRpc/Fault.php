@@ -14,15 +14,19 @@
  *
  * @package    Zend_XmlRpc
  * @subpackage Server
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id$
  */
 
 /**
  * Zend_XmlRpc_Value
  */
 require_once 'Zend/XmlRpc/Value.php';
+
+/**
+ * Zend_XmlRpc_Exception
+ */
+require_once 'Zend/XmlRpc/Exception.php';
 
 /**
  * XMLRPC Faults
@@ -36,7 +40,7 @@ require_once 'Zend/XmlRpc/Value.php';
  *
  * @category   Zend
  * @package    Zend_XmlRpc
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_XmlRpc_Fault
@@ -168,7 +172,6 @@ class Zend_XmlRpc_Fault
     public function setEncoding($encoding)
     {
         $this->_encoding = $encoding;
-        Zend_XmlRpc_Value::setEncoding($encoding);
         return $this;
     }
 
@@ -194,7 +197,6 @@ class Zend_XmlRpc_Fault
     public function loadXml($fault)
     {
         if (!is_string($fault)) {
-            require_once 'Zend/XmlRpc/Exception.php';
             throw new Zend_XmlRpc_Exception('Invalid XML provided to fault');
         }
 
@@ -202,8 +204,7 @@ class Zend_XmlRpc_Fault
             $xml = @new SimpleXMLElement($fault);
         } catch (Exception $e) {
             // Not valid XML
-            require_once 'Zend/XmlRpc/Exception.php';
-            throw new Zend_XmlRpc_Exception('Failed to parse XML fault: ' .  $e->getMessage(), 500, $e);
+            throw new Zend_XmlRpc_Exception('Failed to parse XML fault: ' .  $e->getMessage(), 500);
         }
 
         // Check for fault
@@ -214,12 +215,12 @@ class Zend_XmlRpc_Fault
 
         if (!$xml->fault->value->struct) {
             // not a proper fault
-            require_once 'Zend/XmlRpc/Exception.php';
             throw new Zend_XmlRpc_Exception('Invalid fault structure', 500);
         }
 
         $structXml = $xml->fault->value->asXML();
-        $struct    = Zend_XmlRpc_Value::getXmlRpcValue($structXml, Zend_XmlRpc_Value::XML_STRING);
+        $structXml = preg_replace('/<\?xml version=.*?\?>/i', '', $structXml);
+        $struct    = Zend_XmlRpc_Value::getXmlRpcValue(trim($structXml), Zend_XmlRpc_Value::XML_STRING);
         $struct    = $struct->getValue();
 
         if (isset($struct['faultCode'])) {
@@ -230,7 +231,6 @@ class Zend_XmlRpc_Fault
         }
 
         if (empty($code) && empty($message)) {
-            require_once 'Zend/XmlRpc/Exception.php';
             throw new Zend_XmlRpc_Exception('Fault code and string required');
         }
 
@@ -261,7 +261,6 @@ class Zend_XmlRpc_Fault
     public static function isFault($xml)
     {
         $fault = new self();
-        require_once 'Zend/XmlRpc/Exception.php';
         try {
             $isFault = $fault->loadXml($xml);
         } catch (Zend_XmlRpc_Exception $e) {
@@ -276,7 +275,7 @@ class Zend_XmlRpc_Fault
      *
      * @return string
      */
-    public function saveXml()
+    public function saveXML()
     {
         // Create fault value
         $faultStruct = array(
@@ -284,15 +283,16 @@ class Zend_XmlRpc_Fault
             'faultString' => $this->getMessage()
         );
         $value = Zend_XmlRpc_Value::getXmlRpcValue($faultStruct);
+        $valueDOM = new DOMDocument('1.0', $this->getEncoding());
+        $valueDOM->loadXML($value->saveXML());
 
-        $generator = Zend_XmlRpc_Value::getGenerator();
-        $generator->openElement('methodResponse')
-                  ->openElement('fault');
-        $value->generateXml();
-        $generator->closeElement('fault')
-                  ->closeElement('methodResponse');
+        // Build response XML
+        $dom  = new DOMDocument('1.0', $this->getEncoding());
+        $r    = $dom->appendChild($dom->createElement('methodResponse'));
+        $f    = $r->appendChild($dom->createElement('fault'));
+        $f->appendChild($dom->importNode($valueDOM->documentElement, 1));
 
-        return $generator->flush();
+        return $dom->saveXML();
     }
 
     /**

@@ -15,34 +15,26 @@
  * @category   Zend
  * @package    Zend_Form
  * @subpackage Decorator
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
 /** Zend_Form_Decorator_Abstract */
 require_once 'Zend/Form/Decorator/Abstract.php';
 
-/** Zend_Form_Decorator_Marker_File_Interface */
-require_once 'Zend/Form/Decorator/Marker/File/Interface.php';
-
-/** Zend_File_Transfer_Adapter_Http */
-require_once 'Zend/File/Transfer/Adapter/Http.php';
-
 /**
  * Zend_Form_Decorator_File
  *
  * Fixes the rendering for all subform and multi file elements
- *
+ * 
  * @category   Zend
  * @package    Zend_Form
  * @subpackage Decorator
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id$
+ * @version    $Id: $
  */
-class Zend_Form_Decorator_File
-    extends Zend_Form_Decorator_Abstract
-    implements Zend_Form_Decorator_Marker_File_Interface
+class Zend_Form_Decorator_File extends Zend_Form_Decorator_Abstract
 {
     /**
      * Attributes that should not be passed to helper
@@ -58,7 +50,7 @@ class Zend_Form_Decorator_File
 
     /**
      * Get attributes to pass to file helper
-     *
+     * 
      * @return array
      */
     public function getAttribs()
@@ -80,8 +72,8 @@ class Zend_Form_Decorator_File
 
     /**
      * Render a form file
-     *
-     * @param  string $content
+     * 
+     * @param  string $content 
      * @return string
      */
     public function render($content)
@@ -111,23 +103,16 @@ class Zend_Form_Decorator_File
             $markup[] = $view->formHidden('MAX_FILE_SIZE', $size);
         }
 
-        if (Zend_File_Transfer_Adapter_Http::isApcAvailable()) {
-            $markup[] = $view->formHidden(ini_get('apc.rfc1867_name'), uniqid(), array('id' => 'progress_key'));
-        } else if (Zend_File_Transfer_Adapter_Http::isUploadProgressAvailable()) {
-            $markup[] = $view->formHidden('UPLOAD_IDENTIFIER', uniqid(), array('id' => 'progress_key'));
-        }
-
-        $helper = $element->helper;
         if ($element->isArray()) {
             $name .= "[]";
             $count = $element->getMultiFile();
             for ($i = 0; $i < $count; ++$i) {
                 $htmlAttribs        = $attribs;
                 $htmlAttribs['id'] .= '-' . $i;
-                $markup[] = $view->$helper($name, $htmlAttribs);
+                $markup[] = $view->formFile($name, $htmlAttribs);
             }
         } else {
-            $markup[] = $view->$helper($name, $attribs);
+            $markup[] = $view->formFile($name, $attribs);
         }
 
         $markup = implode($separator, $markup);

@@ -16,9 +16,8 @@
  * @category   Zend
  * @package    Zend_Gdata
  * @subpackage Calendar
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id$
  */
 
 /**
@@ -27,12 +26,17 @@
 require_once 'Zend/Gdata/Extension.php';
 
 /**
+ * @see Zend_Gdata_Extension
+ */
+require_once 'Zend/Gdata/Calendar.php';
+
+/**
  * Represents the gCal:accessLevel element used by the Calendar data API
  *
  * @category   Zend
  * @package    Zend_Gdata
  * @subpackage Calendar
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Gdata_Calendar_Extension_AccessLevel extends Zend_Gdata_Extension

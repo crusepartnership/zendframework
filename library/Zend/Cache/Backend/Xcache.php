@@ -15,9 +15,8 @@
  * @category   Zend
  * @package    Zend_Cache
  * @subpackage Zend_Cache_Backend
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id$
  */
 
 
@@ -35,7 +34,7 @@ require_once 'Zend/Cache/Backend.php';
 /**
  * @package    Zend_Cache
  * @subpackage Zend_Cache_Backend
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Cache_Backend_Xcache extends Zend_Cache_Backend implements Zend_Cache_Backend_Interface
@@ -46,7 +45,7 @@ class Zend_Cache_Backend_Xcache extends Zend_Cache_Backend implements Zend_Cache
      */
     const TAGS_UNSUPPORTED_BY_CLEAN_OF_XCACHE_BACKEND = 'Zend_Cache_Backend_Xcache::clean() : tags are unsupported by the Xcache backend';
     const TAGS_UNSUPPORTED_BY_SAVE_OF_XCACHE_BACKEND =  'Zend_Cache_Backend_Xcache::save() : tags are unsupported by the Xcache backend';
-
+    
     /**
      * Available options
      *
@@ -182,12 +181,7 @@ class Zend_Cache_Backend_Xcache extends Zend_Cache_Backend implements Zend_Cache
                 if ($this->_options['password']) {
                     $_SERVER['PHP_AUTH_PW'] = $this->_options['password'];
                 }
-
-                $cnt = xcache_count(XC_TYPE_VAR);
-                for ($i=0; $i < $cnt; $i++) {
-                    xcache_clear_cache(XC_TYPE_VAR, $i);
-                }
-
+                xcache_clear_cache(XC_TYPE_VAR, 0);
                 if (isset($backup['PHP_AUTH_USER'])) {
                     $_SERVER['PHP_AUTH_USER'] = $backup['PHP_AUTH_USER'];
                     $_SERVER['PHP_AUTH_PW'] = $backup['PHP_AUTH_PW'];

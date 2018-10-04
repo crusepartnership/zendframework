@@ -14,15 +14,14 @@
  *
  * @category   Zend
  * @package    Zend_Controller
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id$
  */
 
 /**
  * @category   Zend
  * @package    Zend_Controller
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_Controller_Request_Abstract
@@ -312,23 +311,12 @@ abstract class Zend_Controller_Request_Abstract
     {
         $this->_params = $this->_params + (array) $array;
 
-        foreach ($array as $key => $value) {
+        foreach ($this->_params as $key => $value) {
             if (null === $value) {
                 unset($this->_params[$key]);
             }
         }
 
-        return $this;
-    }
-
-    /**
-     * Unset all user parameters
-     *
-     * @return Zend_Controller_Request_Abstract
-     */
-    public function clearParams()
-    {
-        $this->_params = array();
         return $this;
     }
 

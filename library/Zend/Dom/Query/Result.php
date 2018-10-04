@@ -14,19 +14,19 @@
  *
  * @category   Zend
  * @package    Zend_Dom
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
 /**
  * Results for DOM XPath query
- *
+ * 
  * @package    Zend_Dom
  * @subpackage Query
  * @uses       Iterator
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
- * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id$
+ * @copyright  Copyright (C) 2008 - Present, Zend Technologies, Inc.
+ * @license    New BSD {@link http://framework.zend.com/license/new-bsd}
+ * @version    $Id: Result.php 12507 2008-11-10 16:29:09Z matthew $
  */
 class Zend_Dom_Query_Result implements Iterator,Countable
 {
@@ -71,11 +71,12 @@ class Zend_Dom_Query_Result implements Iterator,Countable
 
     /**
      * Constructor
-     *
-     * @param  string $cssQuery
-     * @param  string|array $xpathQuery
-     * @param  DOMDocument $document
+     * 
+     * @param  string $cssQuery 
+     * @param  string|array $xpathQuery 
+     * @param  DOMDocument $document 
      * @param  DOMNodeList $nodeList
+     * @return void
      */
     public function  __construct($cssQuery, $xpathQuery, DOMDocument $document, DOMNodeList $nodeList)
     {
@@ -87,7 +88,7 @@ class Zend_Dom_Query_Result implements Iterator,Countable
 
     /**
      * Retrieve CSS Query
-     *
+     * 
      * @return string
      */
     public function getCssQuery()
@@ -97,7 +98,7 @@ class Zend_Dom_Query_Result implements Iterator,Countable
 
     /**
      * Retrieve XPath query
-     *
+     * 
      * @return string
      */
     public function getXpathQuery()
@@ -107,7 +108,7 @@ class Zend_Dom_Query_Result implements Iterator,Countable
 
     /**
      * Retrieve DOMDocument
-     *
+     * 
      * @return DOMDocument
      */
     public function getDocument()
@@ -117,8 +118,8 @@ class Zend_Dom_Query_Result implements Iterator,Countable
 
     /**
      * Iterator: rewind to first element
-     *
-     * @return DOMNode|null
+     * 
+     * @return void
      */
     public function rewind()
     {
@@ -128,7 +129,7 @@ class Zend_Dom_Query_Result implements Iterator,Countable
 
     /**
      * Iterator: is current position valid?
-     *
+     * 
      * @return bool
      */
     public function valid()
@@ -141,7 +142,7 @@ class Zend_Dom_Query_Result implements Iterator,Countable
 
     /**
      * Iterator: return current element
-     *
+     * 
      * @return DOMElement
      */
     public function current()
@@ -151,7 +152,7 @@ class Zend_Dom_Query_Result implements Iterator,Countable
 
     /**
      * Iterator: return key of current element
-     *
+     * 
      * @return int
      */
     public function key()
@@ -161,8 +162,8 @@ class Zend_Dom_Query_Result implements Iterator,Countable
 
     /**
      * Iterator: move to next element
-     *
-     * @return DOMNode|null
+     * 
+     * @return void
      */
     public function next()
     {
@@ -172,7 +173,7 @@ class Zend_Dom_Query_Result implements Iterator,Countable
 
     /**
      * Countable: get count
-     *
+     * 
      * @return int
      */
     public function count()

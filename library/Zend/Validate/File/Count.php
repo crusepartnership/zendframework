@@ -14,9 +14,9 @@
  *
  * @category  Zend
  * @package   Zend_Validate
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd     New BSD License
- * @version   $Id$
+ * @version   $Id: $
  */
 
 /**
@@ -29,7 +29,7 @@ require_once 'Zend/Validate/Abstract.php';
  *
  * @category  Zend
  * @package   Zend_Validate
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Validate_File_Count extends Zend_Validate_Abstract
@@ -37,16 +37,16 @@ class Zend_Validate_File_Count extends Zend_Validate_Abstract
     /**#@+
      * @const string Error constants
      */
-    const TOO_MANY = 'fileCountTooMany';
-    const TOO_FEW  = 'fileCountTooFew';
+    const TOO_MUCH = 'fileCountTooMuch';
+    const TOO_LESS = 'fileCountTooLess';
     /**#@-*/
 
     /**
      * @var array Error message templates
      */
     protected $_messageTemplates = array(
-        self::TOO_MANY => "Too many files, maximum '%max%' are allowed but '%count%' are given",
-        self::TOO_FEW  => "Too few files, minimum '%min%' are expected but '%count%' are given",
+        self::TOO_MUCH => "Too much files, maximum '%max%' are allowed but '%count%' are given",
+        self::TOO_LESS => "Too less files, minimum '%min%' are expected but '%count%' are given"
     );
 
     /**
@@ -100,8 +100,9 @@ class Zend_Validate_File_Count extends Zend_Validate_Abstract
      * 'min': Minimum filecount
      * 'max': Maximum filecount
      *
-     * @param  integer|array|Zend_Config $options Options for the adapter
-     * @throws Zend_Validate_Exception
+     * @param  integer|array $options Options for the adapter
+     * @param  integer $max (Deprecated) Maximum value (implies $options is the minimum)
+     * @return void
      */
     public function __construct($options)
     {
@@ -115,6 +116,7 @@ class Zend_Validate_File_Count extends Zend_Validate_Abstract
         }
 
         if (1 < func_num_args()) {
+            trigger_error('Multiple arguments are deprecated in favor of an array of named arguments', E_USER_NOTICE);
             $options['min'] = func_get_arg(0);
             $options['max'] = func_get_arg(1);
         }
@@ -210,7 +212,6 @@ class Zend_Validate_File_Count extends Zend_Validate_Abstract
      * Adds a file for validation
      *
      * @param string|array $file
-     * @return $this
      */
     public function addFile($file)
     {
@@ -220,7 +221,7 @@ class Zend_Validate_File_Count extends Zend_Validate_Abstract
 
         if (is_array($file)) {
             foreach ($file as $name) {
-                if (!isset($this->_files[$name]) && !empty($name)) {
+                if (!isset($this->_files[$name])) {
                     $this->_files[$name] = $name;
                 }
             }
@@ -242,25 +243,14 @@ class Zend_Validate_File_Count extends Zend_Validate_Abstract
      */
     public function isValid($value, $file = null)
     {
-        if (($file !== null) && !array_key_exists('destination', $file)) {
-            $file['destination'] = dirname($value);
-        }
-
-        if (($file !== null) && array_key_exists('tmp_name', $file)) {
-            $value = $file['destination'] . DIRECTORY_SEPARATOR . $file['name'];
-        }
-
-        if (($file === null) || !empty($file['tmp_name'])) {
-            $this->addFile($value);
-        }
-
+        $this->addFile($value);
         $this->_count = count($this->_files);
         if (($this->_max !== null) && ($this->_count > $this->_max)) {
-            return $this->_throw($file, self::TOO_MANY);
+            return $this->_throw($file, self::TOO_MUCH);
         }
 
         if (($this->_min !== null) && ($this->_count < $this->_min)) {
-            return $this->_throw($file, self::TOO_FEW);
+            return $this->_throw($file, self::TOO_LESS);
         }
 
         return true;

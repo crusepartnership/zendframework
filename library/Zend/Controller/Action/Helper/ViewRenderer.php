@@ -15,9 +15,8 @@
  * @category   Zend
  * @package    Zend_Controller
  * @subpackage Zend_Controller_Action_Helper
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id$
  */
 
 /**
@@ -61,14 +60,14 @@ require_once 'Zend/View.php';
  * $viewHelper->setNoController(true);
  *
  * // Specify a different script to render:
- * $this->_helper->viewRenderer('form');
+ * $this->_helper->view('form');
  *
  * </code>
  *
  * @uses       Zend_Controller_Action_Helper_Abstract
  * @package    Zend_Controller
  * @subpackage Zend_Controller_Action_Helper
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Controller_Action_Helper_ViewRenderer extends Zend_Controller_Action_Helper_Abstract
@@ -83,6 +82,12 @@ class Zend_Controller_Action_Helper_ViewRenderer extends Zend_Controller_Action_
      * @var array
      */
     protected $_delimiters;
+
+    /**
+     * Front controller instance
+     * @var Zend_Controller_Front
+     */
+    protected $_frontController;
 
     /**
      * @var Zend_Filter_Inflector
@@ -189,7 +194,7 @@ class Zend_Controller_Action_Helper_ViewRenderer extends Zend_Controller_Action_
             $this->_setOptions($options);
         }
     }
-
+    
     /**
      * Clone - also make sure the view is cloned.
      *
@@ -199,7 +204,7 @@ class Zend_Controller_Action_Helper_ViewRenderer extends Zend_Controller_Action_
     {
         if (isset($this->view) && $this->view instanceof Zend_View_Interface) {
             $this->view = clone $this->view;
-
+            
         }
     }
 
@@ -217,7 +222,7 @@ class Zend_Controller_Action_Helper_ViewRenderer extends Zend_Controller_Action_
 
     /**
      * Get current module name
-     *
+     * 
      * @return string
      */
     public function getModule()
@@ -246,7 +251,7 @@ class Zend_Controller_Action_Helper_ViewRenderer extends Zend_Controller_Action_
              * @see Zend_Controller_Action_Exception
              */
             require_once 'Zend/Controller/Action/Exception.php';
-            throw new Zend_Controller_Action_Exception('ViewRenderer cannot locate module directory for module "' . $module . '"');
+            throw new Zend_Controller_Action_Exception('ViewRenderer cannot locate module directory');
         }
         $this->_moduleDir = dirname($moduleDir);
         return $this->_moduleDir;
@@ -254,7 +259,7 @@ class Zend_Controller_Action_Helper_ViewRenderer extends Zend_Controller_Action_
 
     /**
      * Get inflector
-     *
+     * 
      * @return Zend_Filter_Inflector
      */
     public function getInflector()
@@ -291,8 +296,8 @@ class Zend_Controller_Action_Helper_ViewRenderer extends Zend_Controller_Action_
 
     /**
      * Set inflector
-     *
-     * @param  Zend_Filter_Inflector $inflector
+     * 
+     * @param  Zend_Filter_Inflector $inflector 
      * @param  boolean               $reference Whether the moduleDir, target, and suffix should be set as references to ViewRenderer properties
      * @return Zend_Controller_Action_Helper_ViewRenderer Provides a fluent interface
      */
@@ -309,8 +314,8 @@ class Zend_Controller_Action_Helper_ViewRenderer extends Zend_Controller_Action_
 
     /**
      * Set inflector target
-     *
-     * @param  string $target
+     * 
+     * @param  string $target 
      * @return void
      */
     protected function _setInflectorTarget($target)
@@ -320,8 +325,8 @@ class Zend_Controller_Action_Helper_ViewRenderer extends Zend_Controller_Action_
 
     /**
      * Set internal module directory representation
-     *
-     * @param  string $dir
+     * 
+     * @param  string $dir 
      * @return void
      */
     protected function _setModuleDir($dir)
@@ -331,7 +336,7 @@ class Zend_Controller_Action_Helper_ViewRenderer extends Zend_Controller_Action_
 
     /**
      * Get internal module directory representation
-     *
+     * 
      * @return string
      */
     protected function _getModuleDir()
@@ -380,8 +385,8 @@ class Zend_Controller_Action_Helper_ViewRenderer extends Zend_Controller_Action_
 
         $inflector = $this->getInflector();
         $this->_setInflectorTarget($this->getViewBasePathSpec());
-
-        $dispatcher = $this->getFrontController()->getDispatcher();
+        
+        $dispatcher = $this->_frontController->getDispatcher();
         $request = $this->getRequest();
 
         $parts = array(
@@ -626,9 +631,6 @@ class Zend_Controller_Action_Helper_ViewRenderer extends Zend_Controller_Action_
         } elseif (null !== $action) {
             $vars['action'] = $action;
         }
-        
-        $replacePattern = array('/[^a-z0-9]+$/i', '/^[^a-z0-9]+/i');
-        $vars['action'] = preg_replace($replacePattern, '', $vars['action']);
 
         $inflector = $this->getInflector();
         if ($this->getNoController() || $this->getNeverController()) {
@@ -840,22 +842,10 @@ class Zend_Controller_Action_Helper_ViewRenderer extends Zend_Controller_Action_
     {
         $inflector  = $this->getInflector();
         $request    = $this->getRequest();
-        $dispatcher = $this->getFrontController()->getDispatcher();
-
-        // Format module name
-        $module = $dispatcher->formatModuleName($request->getModuleName());
-
-        // Format controller name
-        require_once 'Zend/Filter/Word/CamelCaseToDash.php';
-        $filter     = new Zend_Filter_Word_CamelCaseToDash();
-        $controller = $filter->filter($request->getControllerName());
-        $controller = $dispatcher->formatControllerName($controller);
-        if ('Controller' == substr($controller, -10)) {
-            $controller = substr($controller, 0, -10);
-        }
-
-        // Format action name
-        $action = $dispatcher->formatActionName($request->getActionName());
+        $dispatcher = $this->_frontController->getDispatcher();
+        $module     = $dispatcher->formatModuleName($request->getModuleName());
+        $controller = $request->getControllerName();
+        $action     = $dispatcher->formatActionName($request->getActionName());
 
         $params     = compact('module', 'controller', 'action');
         foreach ($vars as $key => $value) {
@@ -975,7 +965,7 @@ class Zend_Controller_Action_Helper_ViewRenderer extends Zend_Controller_Action_
 
     /**
      * Should the ViewRenderer render a view script?
-     *
+     * 
      * @return boolean
      */
     protected function _shouldRender()

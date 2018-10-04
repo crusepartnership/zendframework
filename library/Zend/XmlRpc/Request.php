@@ -14,9 +14,14 @@
  *
  * @category   Zend
  * @package    Zend_Controller
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
+
+/**
+ * Zend_XmlRpc_Exception
+ */
+require_once 'Zend/XmlRpc/Exception.php';
 
 /**
  * Zend_XmlRpc_Value
@@ -27,12 +32,6 @@ require_once 'Zend/XmlRpc/Value.php';
  * Zend_XmlRpc_Fault
  */
 require_once 'Zend/XmlRpc/Fault.php';
-
-/** @see Zend_Xml_Security */
-require_once 'Zend/Xml/Security.php';
-
-/** @see Zend_Xml_Exception */
-require_once 'Zend/Xml/Exception.php';
 
 /**
  * XmlRpc Request object
@@ -47,9 +46,9 @@ require_once 'Zend/Xml/Exception.php';
  *
  * @category Zend
  * @package  Zend_XmlRpc
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version $Id$
+ * @version $Id: Request.php 8997 2008-03-22 17:17:05Z matthew $
  */
 class Zend_XmlRpc_Request
 {
@@ -122,7 +121,6 @@ class Zend_XmlRpc_Request
     public function setEncoding($encoding)
     {
         $this->_encoding = $encoding;
-        Zend_XmlRpc_Value::setEncoding($encoding);
         return $this;
     }
 
@@ -287,7 +285,7 @@ class Zend_XmlRpc_Request
 
     /**
      * Return parameter types
-     *
+     * 
      * @return array
      */
     public function getTypes()
@@ -310,8 +308,8 @@ class Zend_XmlRpc_Request
         }
 
         try {
-            $xml = Zend_Xml_Security::scan($request);
-        } catch (Zend_Xml_Exception $e) {
+            $xml = @new SimpleXMLElement($request);
+        } catch (Exception $e) {
             // Not valid XML
             $this->_fault = new Zend_XmlRpc_Fault(631);
             $this->_fault->setEncoding($this->getEncoding());
@@ -333,7 +331,7 @@ class Zend_XmlRpc_Request
             $types = array();
             $argv  = array();
             foreach ($xml->params->children() as $param) {
-                if (!isset($param->value)) {
+                if (! $param->value instanceof SimpleXMLElement) {
                     $this->_fault = new Zend_XmlRpc_Fault(633);
                     $this->_fault->setEncoding($this->getEncoding());
                     return false;
@@ -408,29 +406,29 @@ class Zend_XmlRpc_Request
      *
      * @return string
      */
-    public function saveXml()
+    public function saveXML()
     {
         $args   = $this->_getXmlRpcParams();
         $method = $this->getMethod();
 
-        $generator = Zend_XmlRpc_Value::getGenerator();
-        $generator->openElement('methodCall')
-                  ->openElement('methodName', $method)
-                  ->closeElement('methodName');
+        $dom = new DOMDocument('1.0', $this->getEncoding());
+        $mCall = $dom->appendChild($dom->createElement('methodCall'));
+        $mName = $mCall->appendChild($dom->createElement('methodName', $method));
 
         if (is_array($args) && count($args)) {
-            $generator->openElement('params');
+            $params = $mCall->appendChild($dom->createElement('params'));
 
             foreach ($args as $arg) {
-                $generator->openElement('param');
-                $arg->generateXml();
-                $generator->closeElement('param');
-            }
-            $generator->closeElement('params');
-        }
-        $generator->closeElement('methodCall');
+                /* @var $arg Zend_XmlRpc_Value */
+                $argDOM = new DOMDocument('1.0', $this->getEncoding());
+                $argDOM->loadXML($arg->saveXML());
 
-        return $generator->flush();
+                $param = $params->appendChild($dom->createElement('param'));
+                $param->appendChild($dom->importNode($argDOM->documentElement, 1));
+            }
+        }
+
+        return $dom->saveXML();
     }
 
     /**

@@ -14,17 +14,18 @@
  *
  * @category   Zend
  * @package    Zend_Auth
- * @subpackage Storage
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @subpackage Zend_Auth_Storage
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id$
+ * @version    $Id: Interface.php 8862 2008-03-16 15:36:00Z thomas $
  */
+
 
 /**
  * @category   Zend
  * @package    Zend_Auth
- * @subpackage Storage
- * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @subpackage Zend_Auth_Storage
+ * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 interface Zend_Auth_Storage_Interface
