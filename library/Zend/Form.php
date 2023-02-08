@@ -397,7 +397,6 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
         return $this->setOptions($config->toArray());
     }
 
-
     // Loaders
 
     /**
@@ -1057,9 +1056,11 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
             throw new Zend_Form_Exception('Element must be specified by string or Zend_Form_Element instance');
         }
 
+        if (isset($this->_elements[$name])) {
         $this->_order[$name] = $this->_elements[$name]->getOrder();
         $this->_orderUpdated = true;
         $this->_setElementsBelongTo($name);
+        }
 
         return $this;
     }
@@ -1642,7 +1643,7 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
      */
     public function addSubForms(array $subForms)
     {
-        foreach ($subForms as $key => $spec) {          
+        foreach ($subForms as $key => $spec) {
             $name= (string) $key;
             if ($spec instanceof Zend_Form) {
                 $this->addSubForm($spec, $name);
@@ -1743,7 +1744,6 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
         $this->_orderUpdated = true;
         return $this;
     }
-
 
     // Display groups:
 
@@ -2025,7 +2025,6 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
         $this->_orderUpdated  = true;
         return $this;
     }
-
 
     // Processing
 
@@ -2455,7 +2454,6 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
         return $this->addErrors($messages);
     }
 
-
     public function persistData()
     {
     }
@@ -2581,7 +2579,6 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
     {
         return $this->_getErrorMessages();
     }
-
 
     // Rendering
 
@@ -2928,7 +2925,6 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
             return '';
         }
     }
-
 
     // Localization:
 
