@@ -1020,7 +1020,6 @@ abstract class Zend_File_Transfer_Adapter_Abstract
     /**
      * Sets a new destination for the given files
      *
-     * @deprecated Will be changed to be a filter!!!
      * @param  string       $destination New destination directory
      * @param  string|array $files       Files to set the new destination for
      * @return Zend_File_Transfer_Abstract
