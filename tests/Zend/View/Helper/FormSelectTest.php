@@ -15,7 +15,7 @@
  * @category   Zend
  * @package    Zend_View
  * @subpackage UnitTests
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id$
  */
@@ -34,7 +34,7 @@ require_once 'Zend/View.php';
  * @category   Zend
  * @package    Zend_View
  * @subpackage UnitTests
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @group      Zend_View
  * @group      Zend_View_Helper
@@ -74,6 +74,32 @@ class Zend_View_Helper_FormSelectTest extends PHPUnit_Framework_TestCase
     public function tearDown()
     {
         unset($this->helper, $this->view);
+    }
+
+    /**
+     * @group ZF-10661
+     */
+    public function testRenderingWithOptions()
+    {
+        $html = $this->helper->formSelect(
+            'foo',
+            null,
+            null,
+            array(
+                 'bar' => 'Bar',
+                 'baz' => 'Baz',
+            )
+        );
+
+        $expected = '<select name="foo" id="foo">'
+                  . "\n"
+                  . '    <option value="bar">Bar</option>'
+                  . "\n"
+                  . '    <option value="baz">Baz</option>'
+                  . "\n"
+                  . '</select>';
+
+        $this->assertSame($expected, $html);
     }
 
     public function testFormSelectWithNameOnlyCreatesEmptySelect()

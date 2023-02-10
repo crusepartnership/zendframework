@@ -15,7 +15,7 @@
  * @category   Zend
  * @package    Zend_Gdata
  * @subpackage UnitTests
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id $
  */
@@ -28,7 +28,7 @@ require_once 'Zend/Gdata/TestUtility/MockHttpClient.php';
  * @category   Zend
  * @package    Zend_Gdata_App
  * @subpackage UnitTests
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @group      Zend_Gdata
  * @group      Zend_Gdata_App
@@ -128,7 +128,7 @@ class Zend_Gdata_AppTest extends PHPUnit_Framework_TestCase
         $this->adapter->setResponse(array('HTTP/1.1 200 OK\r\n\r\n'));
 
         $this->service->setMajorProtocolVersion(1);
-        $this->service->setMinorProtocolVersion(NULL);
+        $this->service->setMinorProtocolVersion(null);
         $this->service->get('http://www.example.com');
 
         $headers = $this->adapter->popRequest()->headers;
@@ -162,7 +162,7 @@ class Zend_Gdata_AppTest extends PHPUnit_Framework_TestCase
         $this->adapter->setResponse(array('HTTP/1.1 200 OK\r\n\r\n'));
 
         $this->service->setMajorProtocolVersion(2);
-        $this->service->setMinorProtocolVersion(NULL);
+        $this->service->setMinorProtocolVersion(null);
         $this->service->get('http://www.example.com');
 
         $headers = $this->adapter->popRequest()->headers;
@@ -601,7 +601,7 @@ class Zend_Gdata_AppTest extends PHPUnit_Framework_TestCase
         try { 
             $eq = $this->service->newEventQuery();
             restore_error_handler();
-            $this->assertType('Zend_Gdata_Calendar_EventQuery', $eq);
+            $this->assertTrue($eq instanceof Zend_Gdata_Calendar_EventQuery);
         } catch ( Zend_Gdata_App_Exception $ex ) {
             // If we catch this exception, it means the ErrorException resulting
             // from the include_once E_NOTICE was caught in the right place,
@@ -613,5 +613,21 @@ class Zend_Gdata_AppTest extends PHPUnit_Framework_TestCase
             restore_error_handler();
             $this->fail('Did not expect ErrorException');
         }
+    }
+
+    /**
+     * @group ZF-10243
+     */
+    public function testStaticImportWithoutUsingObjectMapping()
+    {
+        $this->adapter->setResponse($this->httpEntrySample);
+        $feed = Zend_Gdata_App::import(
+            'http://www.example.com',
+            $this->client,
+            'Zend_Gdata_App_Feed',
+            false
+        );
+
+        $this->assertContains('<id>12345678901234567890</id>', $feed);
     }
 }

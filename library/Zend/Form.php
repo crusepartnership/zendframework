@@ -14,7 +14,7 @@
  *
  * @category   Zend
  * @package    Zend_Form
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -26,7 +26,7 @@ require_once 'Zend/Validate/Interface.php';
  *
  * @category   Zend
  * @package    Zend_Form
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id$
  */
@@ -351,6 +351,11 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
         if (isset($options['attribs'])) {
             $this->addAttribs($options['attribs']);
             unset($options['attribs']);
+        }
+
+        if (isset($options['subForms'])) {
+            $this->addSubForms($options['subForms']);
+            unset($options['subForms']);
         }
 
         $forbidden = array(
@@ -1021,7 +1026,9 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
         if (is_string($element)) {
             if (null === $name) {
                 require_once 'Zend/Form/Exception.php';
-                throw new Zend_Form_Exception('Elements specified by string must have an accompanying name');
+                throw new Zend_Form_Exception(
+                    'Elements specified by string must have an accompanying name'
+                );
             }
 
             $this->_elements[$name] = $this->createElement($element, $name, $options);
@@ -1032,6 +1039,12 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
                 $prefixPaths = array_merge($prefixPaths, $this->_elementPrefixPaths);
             }
 
+            if (is_array($this->_elementDecorators)
+                && 0 == count($element->getDecorators())
+            ) {
+                $element->setDecorators($this->_elementDecorators);
+            }
+
             if (null === $name) {
                 $name = $element->getName();
             }
@@ -1040,7 +1053,9 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
             $this->_elements[$name]->addPrefixPaths($prefixPaths);
         } else {
             require_once 'Zend/Form/Exception.php';
-            throw new Zend_Form_Exception('Element must be specified by string or Zend_Form_Element instance');
+            throw new Zend_Form_Exception(
+                'Element must be specified by string or Zend_Form_Element instance'
+            );
         }
 
         if (isset($this->_elements[$name])) {
@@ -1641,7 +1656,7 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
     public function addSubForms(array $subForms)
     {
         foreach ($subForms as $key => $spec) {
-            $name= (string) $key;
+            $name = (string) $key;
             if ($spec instanceof Zend_Form) {
                 $this->addSubForm($spec, $name);
                 continue;
@@ -1655,6 +1670,10 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
                         continue;
                     case (1 <= $argc):
                         $subForm = array_shift($spec);
+
+                        if (!$subForm instanceof Zend_Form) {
+                            $subForm = new Zend_Form_SubForm($subForm);
+                        }
                     case (2 <= $argc):
                         $name  = array_shift($spec);
                     case (3 <= $argc):
@@ -2458,9 +2477,20 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
     /**
      * Are there errors in the form?
      *
+     * @deprecated since 1.11.1 - use hasErrors() instead
      * @return bool
      */
     public function isErrors()
+    {
+        return $this->hasErrors();
+    }
+
+    /**
+     * Are there errors in the form?
+     *
+     * @return bool
+     */
+    public function hasErrors()
     {
         return $this->_errorsExist;
     }
@@ -3323,6 +3353,13 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
                     } else {
                         $items[$order] = $key;
                     }
+                } elseif (isset($items[$order]) && $items[$order] !== $key) {
+                    throw new Zend_Form_Exception('Form elements ' .
+                        $items[$order] . ' and ' . $key .
+                        ' have the same order (' .
+                        $order . ') - ' .
+                        'this would result in only the last added element to be rendered'
+                    );
                 } else {
                     $items[$order] = $key;
                 }
