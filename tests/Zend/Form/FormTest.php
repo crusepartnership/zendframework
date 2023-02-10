@@ -4336,6 +4336,48 @@ class Zend_Form_FormTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @group ZF-12375
+     */
+    public function testElementTranslatorNotOveriddenbyFormTranslatorDuringRendering()
+    {
+        // Set translator for form
+        $this->form->setTranslator(
+            new Zend_Translate(
+                'array',
+                array(
+                    'labelText' => 'Foo',
+                )
+            )
+        );
+
+        // Add element with his own translator
+        $this->form->addElement(
+            'text',
+            'foo',
+            array(
+                 'label'      => 'labelText',
+                 'translator' => new Zend_Translate(
+                     'array',
+                     array(
+                         'labelText' => 'Bar',
+                     )
+                 ),
+                 'decorators' => array(
+                     'Label',
+                 ),
+            )
+        );
+
+        $this->form->setDecorators(array('FormElements'));
+
+        // Test
+        $this->assertSame(
+            PHP_EOL . '<label for="foo" class="optional">Bar</label>' . PHP_EOL,
+            $this->form->render(new Zend_View())
+        );
+    }
+
+    /**
      * Used by test methods susceptible to ZF-2794, marks a test as incomplete
      *
      * @link   http://framework.zend.com/issues/browse/ZF-2794
@@ -4553,6 +4595,35 @@ class Zend_Form_FormTest extends PHPUnit_Framework_TestCase
             $this->assertFalse(empty($paths));
             $this->assertContains('Foo', $paths[0]);
         }
+    }
+
+    /**
+     * @group ZF-8942
+     */
+    public function testCreateElementIncludesElementDecorators()
+    {
+        // Init form
+        $form = new Zend_Form();
+        $form->setElementDecorators(
+            array(
+                 new Zend_Form_Decorator_ViewHelper,
+                 new Zend_Form_Decorator_Label,
+            )
+        );
+        $element = $form->createElement('text', 'foo');
+
+        //  Test
+        $expected = array(
+            'Zend_Form_Decorator_ViewHelper',
+            'Zend_Form_Decorator_Label',
+        );
+
+        $actual = array();
+        foreach ($element->getDecorators() as $decorator) {
+            $actual[] = get_class($decorator);
+        }
+
+        $this->assertEquals($expected, $actual);
     }
 }
 

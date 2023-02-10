@@ -230,7 +230,7 @@ abstract class Zend_Validate_Abstract implements Zend_Validate_Interface
                 $value = $value->__toString();
             }
         } else {
-            $value = (string)$value;
+            $value = implode((array) $value);
         }
 
         if ($this->getObscureValue()) {
@@ -239,7 +239,11 @@ abstract class Zend_Validate_Abstract implements Zend_Validate_Interface
 
         $message = str_replace('%value%', htmlspecialchars((string) $value), $message);
         foreach ($this->_messageVariables as $ident => $property) {
-            $message = str_replace("%$ident%", implode(' ',(array)$this->$property), $message);
+            $message = str_replace(
+                "%$ident%",
+                implode(' ', (array) $this->$property),
+                $message
+            );
         }
 
         $length = self::getMessageLength();
