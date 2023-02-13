@@ -1,3 +1,7 @@
+[DEV NOTE]
+Please use the tags instead of master branch.
+
+
 Welcome to Zend Framework 1.7.8! This is a bug fix/maintenance release in the 
 Zend Framework 1.7 series. This release maintains backwards compatibility
 with all Zend Framework 1.x releases.
