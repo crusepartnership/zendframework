@@ -1,13 +1,11 @@
 ![Logo](http://framework.zend.com/images/logos/ZendFramework-logo.png)
 
-> ## End-of-Life occurs 28 Sep 2016
+> ## End-of-Life occurred 28 Sep 2016
 >
-> Between now and 28 Sep 2016, we will only be accepting security patches to
-> this repository; after that date, we will issue no more releases.
+> This project is no longer maintained, and reached its end of life on 28 Sep
+> 2016; the last public release was 1.12.20.
 >
-> For more information:
->
-> - https://framework.zend.com/blog/2016-06-28-zf1-eol.html
+> At this time, the repository has been archived, and is read-only.
 
 ---
 
@@ -18,21 +16,11 @@ Master: [![Build Status](https://api.travis-ci.org/zendframework/zf1.png?branch=
 RELEASE INFORMATION
 ===================
 
-Zend Framework 1.12.20 Release.
-Released on September 08, 2016.
+Zend Framework 1.12.21dev Release.
+Released on MMM DD, YYYY.
 
-IMPORTANT FIXES FOR 1.12.20
+IMPORTANT FIXES FOR 1.12.21
 ---------------------------
-
-**This release contains security updates:**
-
-- **ZF2016-03:** The implementation of `ORDER BY` and `GROUP BY` in
-  `Zend_Db_Select` remained prone to SQL injection when a combination of SQL
-  expressions and comments were used. This release provides a comprehensive
-  solution that identifies and removes comments prior to checking validity of
-  the statement to ensure no SQLi vectors occur. We advise always filtering user
-  input prior to invoking these methods, however, to further protect your
-  applications.
 
 See http://framework.zend.com/changelog for full details.
 
