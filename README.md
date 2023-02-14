@@ -1,4 +1,4 @@
-Post end of life changes for zf1 to allow compatibility with PHP 7.3, and potentially future versions
+Post end of life changes for zf1 to allow compatibility with the latest PHP versions.
 
 The files in this archive are released under the Zend Framework license.
 You can find a copy of this license in [LICENSE.txt](LICENSE.txt).
