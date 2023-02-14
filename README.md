@@ -11,3 +11,5 @@ Framework project, our corporate sponsor, and you, the Zend Framework user.
 Please visit us sometime soon at http://framework.zend.com.
 =======
 If you have any requests for tags, releases, or anything else. Feel free to raise an issue and I'll get it sorted.
+
+Installable through git clone or through `composer install zf1-future` https://packagist.org/packages/shardj/zf1-future
