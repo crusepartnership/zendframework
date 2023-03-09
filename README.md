@@ -1,32 +1,39 @@
-# Post end of life changes for zf1 to allow compatibility with the latest PHP versions.
+![zf1-future logo](https://imgur.com/S0i6qOh.png)
+<sub><sup>Thanks to [WebTigers](https://github.com/WebTigers) for the logo</sup></sub>
+# Zend Framework 1 now for PHP 7.4!
 
-The files in this archive are released under the Zend Framework license.
-You can find a copy of this license in [LICENSE.txt](LICENSE.txt).
+### Classic ZF1 Reborn
+Zend may have abandoned the original Zend Framework, but the global Zend Framework Community has not! Since Zend sentenced ZF1 to EOL, the Zend Framework community around the globe has continued to work and build on what we consider to be one of the best PHP frameworks of all time.
 
-ACKNOWLEDGEMENTS
-================
+# ZF1 is Now Version 1.20!
+### Over 200 updates and bug fixes since 1.12!
+The ZF1 community has been hard at work updating Zend Framework with all of the latest features of PHP 7.
 
-The Zend Framework team would like to thank all the contributors to the Zend
-Framework project, our corporate sponsor, and you, the Zend Framework user.
-Please visit us sometime soon at http://framework.zend.com.
-=======
-If you have any requests for tags, releases, or anything else. Feel free to raise an issue and I'll get it sorted.
+# Documentation
+New updated documentation coming soon!
+### Original Docs
+The original docs can be found here: https://framework.zend.com/manual/1.12/en/manual.html
 
+### Installation
 
-## Installation
+Installable through git clone or through
+`composer require shardj/zf1-future` https://packagist.org/packages/shardj/zf1-future
 
-Installable through git clone or through  
-`composer require shardj/zf1-future` https://packagist.org/packages/shardj/zf1-future  
+# System Requirements
+ZF1 Future runs on any version of PHP 7. Soon ZF1 Future will be up and running on PHP 8!
 
-Minimum PHP Version is 7.0
+# License
+The files in this archive are released under the Zend Framework license. You can find a copy of this license in [LICENSE.txt](LICENSE.txt).
 
+# License
+The files in this archive are released under the Zend Framework license. You can find a copy of this license in [LICENSE.txt](LICENSE.txt).
 
-## Extras
+# Related Projects
 
-Recently https://github.com/Shardj/zf1-extras-future has been created for those who need it.
+*  [ZF1 Extras Future](https://github.com/Shardj/zf1-extras-future)
+* [ZF1s](https://github.com/zf1s) - Another community supported continuation of ZF1, with a focus on splitting the frameworks original components into individual packages
 
+# Known issues and solutions
 
-## Known issues and solutions
-
-* ``Bootstrap error: Unable to resolve plugin "useragent"; no corresponding plugin with that name``  
+* ``Bootstrap error: Unable to resolve plugin "useragent"; no corresponding plugin with that name``
    See comments in: https://github.com/Shardj/zf1-future/issues/92
