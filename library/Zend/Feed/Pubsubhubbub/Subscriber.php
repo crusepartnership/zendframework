@@ -646,12 +646,15 @@ class Zend_Feed_Pubsubhubbub_Subscriber
                 $auth = $this->_authentications[$url];
                 $client->setAuth($auth[0], $auth[1]);
             }
+
             $client->setUri($url);
             $client->setRawData(
                 $this->_getRequestParameters($url, $mode),
                 'application/x-www-form-urlencoded'
             );
+
             $response = $client->request();
+
             if ($response->getStatus() !== 204
                 && $response->getStatus() !== 202
             ) {
@@ -806,8 +809,8 @@ class Zend_Feed_Pubsubhubbub_Subscriber
     protected function _generateSubscriptionKey(array $params, $hubUrl)
     {
         $keyBase = $params['hub.topic'] . $hubUrl;
-        $key     = md5($keyBase);
-        return $key;
+
+        return md5($keyBase);
     }
 
     /**

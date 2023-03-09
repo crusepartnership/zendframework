@@ -735,8 +735,10 @@ class Zend_Service_Twitter
                             '"geocode" must be of the format "latitude,longitude,radius"'
                         );
                     }
+
                     list($latitude, $longitude, $radius) = explode(',', $value);
                     $radius = trim($radius);
+
                     if (!preg_match('/^\d+(mi|km)$/', $radius)) {
                         require_once 'Zend/Service/Twitter/Exception.php';
                         throw new Zend_Service_Twitter_Exception(
@@ -1243,8 +1245,8 @@ class Zend_Service_Twitter
         $client = $this->getHttpClient();
         $this->prepare($path, $client);
         $client->setParameterGet($query);
-        $response = $client->request(Zend_Http_Client::GET);
-        return $response;
+
+        return $client->request(Zend_Http_Client::GET);
     }
 
     /**
@@ -1259,8 +1261,8 @@ class Zend_Service_Twitter
     {
         $client = $this->getHttpClient();
         $this->prepare($path, $client);
-        $response = $this->performPost(Zend_Http_Client::POST, $data, $client);
-        return $response;
+
+        return $this->performPost(Zend_Http_Client::POST, $data, $client);
     }
 
     /**

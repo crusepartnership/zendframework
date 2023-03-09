@@ -197,8 +197,8 @@ class Zend_Barcode_Object_Code128 extends Zend_Barcode_Object_ObjectAbstract
         $encodedData = $convertedChars * $characterLength;
         // ...except the STOP character (13)
         $encodedData += $characterLength + 2 * $this->_barThinWidth * $this->_factor;
-        $width = $quietZone + $encodedData + $quietZone;
-        return $width;
+
+        return $quietZone + $encodedData + $quietZone;
     }
 
     /**
@@ -289,7 +289,7 @@ class Zend_Barcode_Object_Code128 extends Zend_Barcode_Object_ObjectAbstract
                  * Switch to C if the next 4 chars are numeric or stay C if the next 2
                  * chars are numeric
                  */
-                if ($currentCharset != 'C') {
+                if ($currentCharset !== 'C') {
                     if ($pos == 0) {
                         $code = array_search("START C", $this->_charSets['C']);
                     } else {
@@ -298,8 +298,8 @@ class Zend_Barcode_Object_Code128 extends Zend_Barcode_Object_ObjectAbstract
                     $result[] = $code;
                     $currentCharset = 'C';
                 }
-            } else if (in_array($char, $this->_charSets['B']) && $currentCharset != 'B'
-                  && !(in_array($char, $this->_charSets['A']) && $currentCharset == 'A')) {
+            } else if (in_array($char, $this->_charSets['B']) && $currentCharset !== 'B'
+                  && !(in_array($char, $this->_charSets['A']) && $currentCharset === 'A')) {
                 /**
                  * Switch to B as B contains the char and B is not the current charset.
                  */
@@ -310,8 +310,8 @@ class Zend_Barcode_Object_Code128 extends Zend_Barcode_Object_ObjectAbstract
                 }
                 $result[] = $code;
                 $currentCharset = 'B';
-            } else if (array_key_exists($char, $this->_charSets['A']) && $currentCharset != 'A'
-                  && !(array_key_exists($char, $this->_charSets['B']) && $currentCharset == 'B')) {
+            } else if (array_key_exists($char, $this->_charSets['A']) && $currentCharset !== 'A'
+                  && !(array_key_exists($char, $this->_charSets['B']) && $currentCharset === 'B')) {
                 /**
                  * Switch to C as C contains the char and C is not the current charset.
                  */
@@ -371,13 +371,12 @@ class Zend_Barcode_Object_Code128 extends Zend_Barcode_Object_ObjectAbstract
         unset($tableOfChars[0]);
 
         $k = 1;
+
         foreach ($tableOfChars as $char) {
             $sum += ($k++) * $char;
         }
 
-        $checksum = $sum % 103;
-
-        return $checksum;
+        return $sum % 103;
     }
 
     /**

@@ -557,8 +557,7 @@ abstract class Zend_Translate_Adapter {
      */
     public function isAvailable($locale)
     {
-        $return = isset($this->_translate[(string) $locale]);
-        return $return;
+        return isset($this->_translate[(string) $locale]);
     }
 
     /**
@@ -764,7 +763,7 @@ abstract class Zend_Translate_Adapter {
                 $this->_routed = [];
                 return $this->_translate[$locale][$plural[0]][$rule];
             }
-        } else if (strlen($locale) != 2) {
+        } else if (strlen($locale) !== 2) {
             // faster than creating a new locale and separate the leading part
             $locale = substr($locale, 0, -strlen(strrchr($locale, '_')));
 
@@ -831,8 +830,11 @@ abstract class Zend_Translate_Adapter {
      */
     protected function _log($message, $locale) {
         if ($this->_options['logUntranslated']) {
-            $message = str_replace('%message%', $message, $this->_options['logMessage']);
-            $message = str_replace('%locale%', $locale, $message);
+            $message = str_replace(
+                ['%message%', '%locale%'],
+                [$message, $locale],
+                $this->_options['logMessage']);
+
             if ($this->_options['log']) {
                 $this->_options['log']->log($message, $this->_options['logPriority']);
             } else {
@@ -891,7 +893,7 @@ abstract class Zend_Translate_Adapter {
         if ((is_string($messageId) || is_int($messageId)) && isset($this->_translate[$locale][$messageId])) {
             // return original translation
             return true;
-        } else if ((strlen($locale) != 2) && ($original === false)) {
+        } else if ((strlen($locale) !== 2) && ($original === false)) {
             // faster than creating a new locale and separate the leading part
             $locale = substr($locale, 0, -strlen(strrchr($locale, '_')));
 

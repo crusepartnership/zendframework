@@ -61,9 +61,10 @@ class Zend_Tool_Project_Provider_DbTable
             $dbTableDirectory = $modelsDirectory->createResource('DbTableDirectory');
         }
 
-        $dbTableFile = $dbTableDirectory->createResource('DbTableFile', ['dbTableName' => $dbTableName, 'actualTableName' => $actualTableName]);
-
-        return $dbTableFile;
+        return $dbTableDirectory->createResource(
+            'DbTableFile',
+            ['dbTableName' => $dbTableName, 'actualTableName' => $actualTableName]
+        );
     }
 
     public static function hasResource(Zend_Tool_Project_Profile $profile, $dbTableName, $moduleName = null)
@@ -187,7 +188,7 @@ class Zend_Tool_Project_Provider_DbTable
                 );
         }
 
-        if (count($tableResources) == 0) {
+        if (count($tableResources) === 0) {
             $this->_registry->getResponse()->appendContent('There are no tables in the selected database to write.');
         }
 

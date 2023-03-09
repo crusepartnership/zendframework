@@ -176,8 +176,7 @@ class Zend_Filter_Encrypt_Openssl implements Zend_Filter_Encrypt_Interface
      */
     public function getPublicKey()
     {
-        $key = $this->_keys['public'];
-        return $key;
+        return $this->_keys['public'];
     }
 
     /**
@@ -209,8 +208,7 @@ class Zend_Filter_Encrypt_Openssl implements Zend_Filter_Encrypt_Interface
      */
     public function getPrivateKey()
     {
-        $key = $this->_keys['private'];
-        return $key;
+        return $this->_keys['private'];
     }
 
     /**
@@ -247,8 +245,7 @@ class Zend_Filter_Encrypt_Openssl implements Zend_Filter_Encrypt_Interface
      */
     public function getEnvelopeKey()
     {
-        $key = $this->_keys['envelope'];
-        return $key;
+        return $this->_keys['envelope'];
     }
 
     /**
@@ -356,7 +353,7 @@ class Zend_Filter_Encrypt_Openssl implements Zend_Filter_Encrypt_Interface
         $encrypted     = [];
         $encryptedkeys = [];
 
-        if (count($this->_keys['public']) == 0) {
+        if (count($this->_keys['public']) === 0) {
             require_once 'Zend/Filter/Exception.php';
             throw new Zend_Filter_Exception('Openssl can not encrypt without public keys');
         }

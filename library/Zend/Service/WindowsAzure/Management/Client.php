@@ -1303,7 +1303,8 @@ class Zend_Service_WindowsAzure_Management_Client
 			// Append role instances
 			if ($xmlService->RoleInstanceList && $xmlService->RoleInstanceList->RoleInstance) {
 				$xmlRoleInstances = $xmlService->RoleInstanceList->RoleInstance;
-				if (count($xmlService->RoleInstanceList->RoleInstance) == 1) {
+
+				if (count($xmlService->RoleInstanceList->RoleInstance) === 1) {
 		    	    $xmlRoleInstances = [$xmlService->RoleInstanceList->RoleInstance];
 		    	}
 		    		
@@ -1324,7 +1325,7 @@ class Zend_Service_WindowsAzure_Management_Client
 			// Append roles
 			if ($xmlService->RoleList && $xmlService->RoleList->Role) {
 				$xmlRoles = $xmlService->RoleList->Role;
-				if (count($xmlService->RoleList->Role) == 1) {
+				if (count($xmlService->RoleList->Role) === 1) {
 		    	    $xmlRoles = [$xmlService->RoleList->Role];
 		    	}
 	    		
@@ -2417,10 +2418,9 @@ class Zend_Service_WindowsAzure_Management_Client
      * @return string
      */
     public function _cleanConfiguration($configuration) {
-    	$configuration = str_replace('?<?', '<?', $configuration);
-		$configuration = str_replace("\r", "", $configuration);
-		$configuration = str_replace("\n", "", $configuration);
-		
-		return $configuration;
+        return str_replace(
+            ['?<?', "\r", "\n"],
+            ['<?', "", ""],
+            $configuration);
     }
 }

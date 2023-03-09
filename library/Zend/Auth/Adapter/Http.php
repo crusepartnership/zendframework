@@ -478,14 +478,12 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
      */
     protected function _digestHeader()
     {
-        $wwwauth = 'Digest realm="' . $this->_realm . '", '
+        return 'Digest realm="' . $this->_realm . '", '
                  . 'domain="' . $this->_domains . '", '
                  . 'nonce="' . $this->_calcNonce() . '", '
                  . ($this->_useOpaque ? 'opaque="' . $this->_calcOpaque() . '", ' : '')
                  . 'algorithm="' . $this->_algo . '", '
                  . 'qop="' . implode(',', $this->_supportedQops) . '"';
-
-        return $wwwauth;
     }
 
     /**
@@ -532,17 +530,18 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
         }
         // Fix for ZF-1515: Now re-challenges on empty username or password
         $creds = array_filter(explode(':', $auth));
-        if (count($creds) != 2) {
+        if (count($creds) !== 2) {
             return $this->_challengeClient();
         }
 
         $password = $this->_basicResolver->resolve($creds[0], $this->_realm);
+
         if ($password && $this->_secureStringCompare($password, $creds[1])) {
             $identity = ['username'=>$creds[0], 'realm'=>$this->_realm];
             return new Zend_Auth_Result(Zend_Auth_Result::SUCCESS, $identity);
-        } else {
-            return $this->_challengeClient();
         }
+
+        return $this->_challengeClient();
     }
 
     /**
@@ -665,8 +664,10 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
         // would be surprising if the user just logged in.
         $timeout = ceil(time() / $this->_nonceTimeout) * $this->_nonceTimeout;
 
-        $nonce = hash('md5', $timeout . ':' . $this->_request->getServer('HTTP_USER_AGENT') . ':' . __CLASS__);
-        return $nonce;
+        return hash(
+            'md5',
+            $timeout . ':' . $this->_request->getServer('HTTP_USER_AGENT') . ':' . __CLASS__
+        );
     }
 
     /**
@@ -860,9 +861,11 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
             return false;
         }
         $result = 0;
+
         for ($i = 0; $i < strlen($a); $i++) {
             $result |= ord($a[$i]) ^ ord($b[$i]);
         }
+
         return $result == 0;
     }
 }

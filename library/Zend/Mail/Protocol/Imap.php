@@ -153,6 +153,7 @@ class Zend_Mail_Protocol_Imap
     protected function _assumedNextLine($start)
     {
         $line = $this->_nextLine();
+
         return strpos($line, $start) === 0;
     }
 
@@ -385,9 +386,8 @@ class Zend_Mail_Protocol_Imap
     public function requestAndResponse($command, $tokens = [], $dontParse = false)
     {
         $this->sendRequest($command, $tokens, $tag);
-        $response = $this->readResponse($tag, $dontParse);
 
-        return $response;
+        return $this->readResponse($tag, $dontParse);
     }
 
     /**
@@ -594,7 +594,7 @@ class Zend_Mail_Protocol_Imap
                 continue;
             }
             // if we only want one item we return that one directly
-            if (count($items) == 1) {
+            if (count($items) === 1) {
                 if ($tokens[2][0] == $items[0]) {
                     $data = $tokens[2][1];
                 } else {
@@ -655,7 +655,7 @@ class Zend_Mail_Protocol_Imap
         }
 
         foreach ($list as $item) {
-            if (count($item) != 4 || $item[0] != 'LIST') {
+            if (count($item) !== 4 || $item[0] != 'LIST') {
                 continue;
             }
             $result[$item[3]] = ['delim' => $item[2], 'flags' => $item[1]];

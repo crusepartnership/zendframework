@@ -580,7 +580,7 @@ abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess, IteratorAggreg
          * is a scalar.
          */
         $primaryKey = $this->_getPrimaryKey(true);
-        if (count($primaryKey) == 1) {
+        if (count($primaryKey) === 1) {
             return current($primaryKey);
         }
 
@@ -1103,8 +1103,8 @@ abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess, IteratorAggreg
                 throw new Zend_Db_Table_Row_Exception($e->getMessage(), $e->getCode(), $e);
             }
         }
-        $rowset = new $rowsetClass($config);
-        return $rowset;
+
+        return new $rowsetClass($config);
     }
 
     /**

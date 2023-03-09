@@ -236,9 +236,11 @@ class Zend_Queue_Adapter_Db extends Zend_Queue_Adapter_AdapterAbstract
 
         // if the queue does not exist then it must already be deleted.
         $list = $this->_queueTable->find($id);
+
         if (count($list) === 0) {
             return false;
         }
+
         $queue = $list->current();
 
         if ($queue instanceof Zend_Db_Table_Row_Abstract) {
@@ -276,9 +278,7 @@ class Zend_Queue_Adapter_Db extends Zend_Queue_Adapter_AdapterAbstract
             $this->_queues[$queue->queue_name] = (int)$queue->queue_id;
         }
 
-        $list = array_keys($this->_queues);
-
-        return $list;
+        return array_keys($this->_queues);
     }
 
     /**

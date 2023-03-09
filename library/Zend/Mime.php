@@ -466,11 +466,12 @@ class Zend_Mime
      */
     private static function _encodeQuotedPrintable($str)
     {
-        $str = str_replace('=', '=3D', $str);
-        $str = str_replace(self::$qpKeys, self::$qpReplaceValues, $str);
-        $str = rtrim($str);
+        $str = str_replace(
+            ['=', self::$qpKeys],
+            ['=3D', self::$qpReplaceValues],
+            $str);
 
-        return $str;
+        return rtrim($str);
     }
 
     /**
@@ -521,8 +522,9 @@ class Zend_Mime
                 }
                 $tmp = "";
             }
+
             // don't forget to append the rest to the last line
-            if (strlen($str) == 0) {
+            if (strlen($str) === 0) {
                 $lines[$currentLine] .= $tmp;
             }
         }
@@ -531,6 +533,7 @@ class Zend_Mime
         for ($i = 0; $i < count($lines); $i++) {
             $lines[$i] = " " . $prefix . $lines[$i] . "?=";
         }
+
         $str = trim(implode($lineEnd, $lines));
 
         return $str;

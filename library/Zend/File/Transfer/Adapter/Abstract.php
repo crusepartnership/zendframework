@@ -958,7 +958,7 @@ abstract class Zend_File_Transfer_Adapter_Abstract
             $result[$file] = $directory . $this->_files[$file]['name'];
         }
 
-        if (count($result) == 1) {
+        if (count($result) === 1) {
             return current($result);
         }
 
@@ -1095,7 +1095,7 @@ abstract class Zend_File_Transfer_Adapter_Abstract
 
         if (empty($destinations)) {
             $destinations = $this->_getTmpDir();
-        } else if (count($destinations) == 1) {
+        } else if (count($destinations) === 1) {
             $destinations = current($destinations);
         }
 
@@ -1189,7 +1189,7 @@ abstract class Zend_File_Transfer_Adapter_Abstract
             }
         }
 
-        if (count($result) == 1) {
+        if (count($result) === 1) {
             return current($result);
         }
 
@@ -1222,7 +1222,7 @@ abstract class Zend_File_Transfer_Adapter_Abstract
             }
         }
 
-        if (count($result) == 1) {
+        if (count($result) === 1) {
             return current($result);
         }
 
@@ -1271,7 +1271,7 @@ abstract class Zend_File_Transfer_Adapter_Abstract
             }
         }
 
-        if (count($result) == 1) {
+        if (count($result) === 1) {
             return current($result);
         }
 
