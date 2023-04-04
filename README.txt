@@ -1,5 +1,6 @@
 [DEV NOTE]
-Please use the tags instead of master branch.
+1) Please use the tags instead of master branch.
+2) Project is cloned from shardj/zf1-future
 
 
 Welcome to Zend Framework 1.7.8! This is a bug fix/maintenance release in the 
